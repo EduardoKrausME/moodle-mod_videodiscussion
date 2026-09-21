@@ -1,0 +1,129 @@
+.mod-videodiscussion .vd-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.mod-videodiscussion .vd-player-wrap {
+    background: #111;
+    border-radius: .5rem;
+    overflow: hidden;
+}
+
+.mod-videodiscussion .vd-player {
+    display: block;
+    width: 100%;
+    max-height: 72vh;
+    background: #000;
+}
+
+.mod-videodiscussion .vd-embed {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+.mod-videodiscussion .vd-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.mod-videodiscussion .vd-discussion-timeline {
+    position: relative;
+    height: 1.6rem;
+    margin: .75rem .35rem 0;
+}
+
+.mod-videodiscussion .vd-timeline-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: .7rem;
+    height: .25rem;
+    border-radius: .25rem;
+    background: var(--bs-gray-300, #dee2e6);
+}
+
+.mod-videodiscussion .vd-marker {
+    position: absolute;
+    top: .28rem;
+    transform: translateX(-50%);
+    width: .9rem;
+    height: .9rem;
+    padding: 0;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--bs-primary, #0d6efd);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
+    z-index: 2;
+}
+
+.mod-videodiscussion .vd-marker-required {
+    background: var(--bs-danger, #dc3545);
+}
+
+.mod-videodiscussion .vd-progress-card,
+.mod-videodiscussion .vd-new-discussion,
+.mod-videodiscussion .vd-thread {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: .5rem;
+    padding: 1rem;
+    background: var(--bs-body-bg, #fff);
+}
+
+.mod-videodiscussion .vd-thread {
+    margin-bottom: 1rem;
+    scroll-margin-top: 1rem;
+}
+
+.mod-videodiscussion .vd-thread-heading {
+    display: flex;
+    gap: .6rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+.mod-videodiscussion .vd-thread-title {
+    flex: 1 1 12rem;
+}
+
+.mod-videodiscussion .vd-thread-message {
+    margin: .75rem 0;
+}
+
+.mod-videodiscussion .vd-post {
+    border-left: .2rem solid var(--bs-gray-300, #dee2e6);
+    padding: .65rem .75rem;
+    margin: .5rem 0;
+    background: rgba(0, 0, 0, .02);
+}
+
+.mod-videodiscussion .vd-post-reply {
+    margin-left: 1.25rem;
+}
+
+.mod-videodiscussion .vd-post-highlighted {
+    border-left-color: var(--bs-warning, #ffc107);
+    background: rgba(255, 193, 7, .10);
+}
+
+.mod-videodiscussion .vd-post-meta {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: .875rem;
+}
+
+.mod-videodiscussion .vd-post-message > :last-child,
+.mod-videodiscussion .vd-thread-message > :last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+    .mod-videodiscussion .vd-layout {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,64 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videodiscussion/manage
+
+    Example context (json):
+    {
+        Aqui tem que criar o context em inglês
+    }
+}}
+<div class="mod-videodiscussion-manage">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{#str}}managediscussions, videodiscussion{{/str}}</h2>
+        <div>
+            <a class="btn btn-primary" href="{{{addurl}}}">{{#str}}addteacherprompt, videodiscussion{{/str}}</a>
+            <a class="btn btn-secondary" href="{{{viewurl}}}">{{#str}}backtoactivity, videodiscussion{{/str}}</a>
+        </div>
+    </div>
+    {{^hasthreads}}
+        <div class="alert alert-light">{{#str}}nodiscussions, videodiscussion{{/str}}</div>{{/hasthreads}}
+    {{#hasthreads}}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                <tr>
+                    <th>{{#str}}timestamp, videodiscussion{{/str}}</th>
+                    <th>{{#str}}subject, videodiscussion{{/str}}</th>
+                    <th>{{#str}}author, videodiscussion{{/str}}</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#threads}}
+                    <tr>
+                        <td>{{timecode}}</td>
+                        <td>{{subject}} {{#mandatory}}<span class="badge bg-danger">{{#str}}
+                            mandatorybadge, videodiscussion{{/str}}</span>{{/mandatory}} {{#requireownpost}}
+                            <span class="badge bg-info text-dark">{{#str}}
+                                requireownpost, videodiscussion{{/str}}</span>{{/requireownpost}}</td>
+                        <td>{{author}}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{{editurl}}}">{{#str}}
+                            edit{{/str}}</a> <a class="btn btn-sm btn-outline-danger" href="{{{deleteurl}}}">{{#str}}
+                            delete{{/str}}</a></td>
+                    </tr>
+                {{/threads}}
+                </tbody>
+            </table>
+        </div>
+    {{/hasthreads}}
+</div>

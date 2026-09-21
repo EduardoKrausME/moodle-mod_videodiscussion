@@ -1,0 +1,185 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videodiscussion/view
+
+    Example context (json):
+    {
+        Aqui tem que criar o context em inglês
+    }
+}}
+<div class="mod-videodiscussion" data-region="videodiscussion" data-config="{{configjson}}">
+    <div class="vd-header mb-3">
+        <h2>{{name}}</h2>
+        {{#hasintro}}
+            <div class="vd-intro">{{{intro}}}</div>{{/hasintro}}
+        <div class="vd-actions">
+            {{#canmanage}}<a class="btn btn-secondary" href="{{{manageurl}}}">{{#str}}
+                managediscussions, videodiscussion{{/str}}</a>{{/canmanage}}
+            {{#canreport}}<a class="btn btn-secondary" href="{{{reporturl}}}">{{#str}}
+                report, videodiscussion{{/str}}</a>{{/canreport}}
+        </div>
+    </div>
+
+    <div class="vd-layout">
+        <div class="vd-video-column">
+            <div class="vd-player-wrap" data-region="player-wrap">
+                {{#player.html5}}
+                    <video class="vd-player" data-region="html5-player" controls preload="metadata" playsinline>
+                        <source src="{{{player.url}}}">
+                    </video>
+                {{/player.html5}}
+                {{#player.youtube}}
+                    <div class="vd-embed">
+                        <iframe data-region="youtube-player" src="{{{player.url}}}"
+                                allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                {{/player.youtube}}
+                {{#player.vimeo}}
+                    <div class="vd-embed">
+                        <iframe data-region="vimeo-player" src="{{{player.url}}}"
+                                allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                {{/player.vimeo}}
+            </div>
+
+            <div class="vd-discussion-timeline" data-region="timeline"
+                 aria-label="{{#str}}discussionpoints, videodiscussion{{/str}}">
+                <div class="vd-timeline-track"></div>
+                {{#markers}}
+                    <button type="button" class="vd-marker {{#mandatory}}vd-marker-required{{/mandatory}}"
+                            data-vd-marker data-time="{{timepoint}}" title="{{timecode}} — {{subject}}">
+                        <span class="sr-only">{{timecode}} — {{subject}}</span>
+                    </button>
+                {{/markers}}
+            </div>
+
+            <div class="vd-progress-card mt-3">
+                <div class="d-flex justify-content-between">
+                    <strong>{{#str}}progress, videodiscussion{{/str}}</strong>
+                    <span data-region="progress-label">{{progress.percent}}%</span>
+                </div>
+                <div class="progress mt-1" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                     aria-valuenow="{{progress.percentrounded}}">
+                    <div class="progress-bar" data-region="progress-bar"
+                         style="width: {{progress.percentrounded}}%"></div>
+                </div>
+                <div class="small text-muted mt-1">{{progress.targettext}} · {{progress.resumetext}}</div>
+            </div>
+
+            {{#allowstudentthreads}}
+                <div class="vd-new-discussion mt-3">
+                    <button class="btn btn-primary" type="button" data-action="comment-now">{{#str}}
+                        commentatmoment, videodiscussion{{/str}}</button>
+                    <form class="vd-new-form mt-3 d-none" data-region="new-discussion-form" method="post"
+                          action="{{{posturl}}}">
+                        <input type="hidden" name="id" value="{{cmid}}">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        <input type="hidden" name="groupid" value="{{groupid}}">
+                        <input type="hidden" name="timepoint" value="0" data-region="new-timepoint">
+                        <div class="mb-2"><strong>{{#str}}timestamp, videodiscussion{{/str}}:</strong> <span
+                                data-region="new-timecode">00:00</span></div>
+                        <div class="mb-2">
+                            <label class="form-label" for="vd-new-subject">{{#str}}
+                                subject, videodiscussion{{/str}}</label>
+                            <input id="vd-new-subject" class="form-control" type="text" name="subject" maxlength="255"
+                                   required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="vd-new-message">{{#str}}
+                                message, videodiscussion{{/str}}</label>
+                            <textarea id="vd-new-message" class="form-control" name="message" rows="4"
+                                      required></textarea>
+                        </div>
+                        <button class="btn btn-primary" type="submit">{{#str}}
+                            postdiscussion, videodiscussion{{/str}}</button>
+                    </form>
+                </div>
+            {{/allowstudentthreads}}
+        </div>
+
+        <div class="vd-discussions-column" data-region="discussions">
+            <h3>{{#str}}discussionpoints, videodiscussion{{/str}}</h3>
+            {{^hasthreads}}
+                <div class="alert alert-light">{{#str}}nodiscussions, videodiscussion{{/str}}</div>{{/hasthreads}}
+            {{#threads}}
+                <article class="vd-thread" id="thread-{{id}}" data-thread-id="{{id}}">
+                    <div class="vd-thread-heading">
+                        <button type="button" class="vd-time btn btn-link p-0" data-vd-seek
+                                data-time="{{timepoint}}">{{timecode}}</button>
+                        <div class="vd-thread-title"><strong>{{subject}}</strong></div>
+                        <div class="vd-thread-badges">
+                            {{#mandatory}}<span class="badge bg-danger">{{#str}}
+                                mandatorybadge, videodiscussion{{/str}}</span>{{/mandatory}}
+                            {{#teacherprompt}}<span class="badge bg-secondary">{{#str}}
+                                teacherprompt, videodiscussion{{/str}}</span>{{/teacherprompt}}
+                        </div>
+                    </div>
+                    <div class="vd-thread-author small text-muted">{{author}}</div>
+                    <div class="vd-thread-message">{{{message}}}</div>
+
+                    {{#revealblocked}}
+                        <div class="alert alert-info py-2">{{#str}}
+                            revealblocked, videodiscussion{{/str}}</div>{{/revealblocked}}
+                    <div class="vd-posts">
+                        {{#posts}}
+                            <div class="vd-post {{#isreply}}vd-post-reply{{/isreply}} {{#highlighted}}vd-post-highlighted{{/highlighted}}">
+                                <div class="vd-post-meta"><strong>{{author}}</strong> <span
+                                        class="text-muted">{{time}}</span>
+                                    {{#highlighted}}<span class="badge bg-warning text-dark">{{#str}}
+                                        highlightedbadge, videodiscussion{{/str}}</span>{{/highlighted}}
+                                </div>
+                                <div class="vd-post-message">{{{message}}}</div>
+                                {{#canhighlight}}
+                                    <a class="small" href="{{{highlighturl}}}">{{#highlighted}}{{#str}}
+                                        removehighlight, videodiscussion{{/str}}{{/highlighted}}{{^highlighted}}{{#str}}
+                                        highlight, videodiscussion{{/str}}{{/highlighted}}</a>{{/canhighlight}}
+                            </div>
+                        {{/posts}}
+                        {{^hasposts}}{{^revealblocked}}
+                            <div class="small text-muted mb-2">{{#str}}
+                                noreplies, videodiscussion{{/str}}</div>{{/revealblocked}}{{/hasposts}}
+                    </div>
+
+                    {{#canreply}}
+                        <form class="vd-reply-form mt-2" method="post" action="{{{posturl}}}">
+                            <input type="hidden" name="id" value="{{cmid}}">
+                            <input type="hidden" name="threadid" value="{{id}}">
+                            <input type="hidden" name="parentid" value="0">
+                            <input type="hidden" name="groupid" value="{{groupid}}">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <label class="form-label" for="vd-reply-{{id}}">{{#str}}
+                                reply, videodiscussion{{/str}}</label>
+                            <textarea id="vd-reply-{{id}}" class="form-control" name="message" rows="3"
+                                      required></textarea>
+                            <button class="btn btn-sm btn-primary mt-2" type="submit">{{#str}}
+                                postreply, videodiscussion{{/str}}</button>
+                        </form>
+                    {{/canreply}}
+
+                    {{#canmanage}}
+                        <div class="vd-thread-admin mt-2">
+                            <a class="btn btn-sm btn-outline-secondary" href="{{{editurl}}}">{{#str}}edit{{/str}}</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{{{deleteurl}}}" data-confirm-delete>{{#str}}
+                                delete{{/str}}</a>
+                        </div>
+                    {{/canmanage}}
+                </article>
+            {{/threads}}
+        </div>
+    </div>
+</div>

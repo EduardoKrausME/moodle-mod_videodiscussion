@@ -1,0 +1,68 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videodiscussion/report
+
+    Example context (json):
+    {
+        Aqui tem que criar o context em inglês
+    }
+}}
+<div class="mod-videodiscussion-report">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{#str}}report, videodiscussion{{/str}}</h2>
+        <a class="btn btn-secondary" href="{{{viewurl}}}">{{#str}}backtoactivity, videodiscussion{{/str}}</a>
+    </div>
+    <form method="post" action="{{{actionurl}}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                <tr>
+                    <th>{{#str}}participant, videodiscussion{{/str}}</th>
+                    <th>{{#str}}comments, videodiscussion{{/str}}</th>
+                    <th>{{#str}}replies, videodiscussion{{/str}}</th>
+                    <th>{{#str}}mandatoryanswered, videodiscussion{{/str}}</th>
+                    <th>{{#str}}watchedpercent, videodiscussion{{/str}}</th>{{#canGrade}}
+                    <th>{{#str}}grade, videodiscussion{{/str}} / {{maxgrade}}</th>{{/canGrade}}</tr>
+                </thead>
+                <tbody>
+                {{#rows}}
+                    <tr>
+                        <td><a href="{{{profileurl}}}">{{name}}</a></td>
+                        <td>{{comments}}</td>
+                        <td>{{replies}}</td>
+                        <td>{{mandatorytext}}</td>
+                        <td>{{percent}}%</td>
+                        {{#canGrade}}
+                            <td><input class="form-control form-control-sm" style="max-width: 7rem" type="number"
+                                       min="0" max="{{maxgrade}}" step="0.01" name="grades[{{userid}}]"
+                                       value="{{grade}}"></td>{{/canGrade}}
+                    </tr>
+                {{/rows}}
+                {{^hasrows}}
+                    <tr>
+                        <td colspan="6">{{#str}}nothingtodisplay{{/str}}</td>
+                    </tr>{{/hasrows}}
+                </tbody>
+            </table>
+        </div>
+        {{#canGrade}}
+            <button class="btn btn-primary" type="submit">{{#str}}
+                savegrades, videodiscussion{{/str}}</button>{{/canGrade}}
+    </form>
+</div>
