@@ -44,7 +44,7 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $this->standard_intro_elements();
 
-        $mform->addElement('header', 'videosettings', get_string('videosource', 'videodiscussion'));
+        $mform->addElement('html', '<h3>' . get_string('videosource', 'videodiscussion') . '</h3>');
         $sources = [
             'url' => get_string('sourceurl', 'videodiscussion'),
             'upload' => get_string('sourceupload', 'videodiscussion'),
@@ -61,12 +61,11 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
 
         $mform->addElement('filemanager', 'videofile', get_string('videofile', 'videodiscussion'), null, [
             'subdirs' => false,
-            'maxfiles' => 1,
             'accepted_types' => ['video'],
         ]);
         $mform->hideIf('videofile', 'videosource', 'neq', 'upload');
 
-        $mform->addElement('header', 'discussionoptions', get_string('discussionpoints', 'videodiscussion'));
+        $mform->addElement('html', '<h3>' . get_string('discussionpoints', 'videodiscussion') . '</h3>');
         $mform->addElement('advcheckbox', 'allowstudentthreads', get_string('allowstudentthreads', 'videodiscussion'));
         $mform->addHelpButton('allowstudentthreads', 'allowstudentthreads', 'videodiscussion');
         $mform->setDefault('allowstudentthreads', 1);
@@ -132,6 +131,15 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
         }
         if ((float)$data['grade'] < 0) {
             $errors['grade'] = get_string('invaliddata', 'error');
+        }
+        foreach (['videofile'] as $field) {
+            $draftid = (int)($data[$field] ?? 0);
+            if ($draftid > 0) {
+                $draftinfo = file_get_draft_area_info($draftid);
+                if ((int)$draftinfo['filecount'] > 1) {
+                    $errors[$field] = get_string('errormaxfiles', 'videodiscussion');
+                }
+            }
         }
         return $errors;
     }

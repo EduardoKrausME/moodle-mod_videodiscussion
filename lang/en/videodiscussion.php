@@ -43,6 +43,7 @@ $string['discussionpoints'] = 'Discussion points';
 $string['discussionsaved'] = 'Discussion saved.';
 $string['editteacherprompt'] = 'Edit discussion prompt';
 $string['errorgroupaccess'] = 'You cannot post to this group.';
+$string['errormaxfiles'] = 'Only one file can be uploaded.';
 $string['errorposting'] = 'The response could not be saved.';
 $string['errorthreadaccess'] = 'You cannot access this discussion.';
 $string['eventcoursemoduleviewed'] = 'Video Discussion viewed';
