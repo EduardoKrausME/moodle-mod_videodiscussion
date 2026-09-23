@@ -127,3 +127,8 @@
         grid-template-columns: 1fr;
     }
 }
+/* Do not shrink the primary video because of the viewport height. */
+.mod-videodiscussion .vd-player {
+    width: 100%;
+    max-height: none;
+}
