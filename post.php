@@ -83,6 +83,14 @@ if ($threadid) {
         'other' => ['threadid' => $threadid],
     ]);
     $event->trigger();
+
+    if (!empty($activity->completionmandatory)) {
+        $completion = new completion_info($course);
+        if ($completion->is_enabled($cm)) {
+            $completion->update_state($cm, COMPLETION_UNKNOWN, $USER->id);
+        }
+    }
+
     redirect(new moodle_url('/mod/videodiscussion/view.php',
         ['id' => $cm->id], 'thread-' . $threadid), get_string('replyposted', 'videodiscussion'));
 }
@@ -110,5 +118,11 @@ $thread = (object)[
     'timemodified' => $now,
 ];
 $threadid = $DB->insert_record('videodiscussion_threads', $thread);
+$event = \mod_videodiscussion\event\thread_created::create([
+    'objectid' => $threadid,
+    'context' => $context,
+]);
+$event->trigger();
+
 redirect(new moodle_url('/mod/videodiscussion/view.php',
     ['id' => $cm->id], 'thread-' . $threadid), get_string('discussioncreated', 'videodiscussion'));
