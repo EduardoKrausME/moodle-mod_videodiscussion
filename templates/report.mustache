@@ -6,20 +6,13 @@
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Moodle is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-}}
-{{!
     @template mod_videodiscussion/report
 
     Example context (json):
     {
-        Aqui tem que criar o context em inglês
+        "hasrows": true,
+        "canGrade": true,
+        "maxgrade": "100.00"
     }
 }}
 <div class="mod-videodiscussion-report">
@@ -30,6 +23,7 @@
     {{#hasgroupmenu}}
         <div class="mb-3">{{{groupmenu}}}</div>
     {{/hasgroupmenu}}
+
     <form method="post" action="{{{actionurl}}}">
         <input type="hidden" name="sesskey" value="{{sesskey}}">
         <div class="table-responsive">
@@ -40,8 +34,12 @@
                     <th>{{#str}}comments, videodiscussion{{/str}}</th>
                     <th>{{#str}}replies, videodiscussion{{/str}}</th>
                     <th>{{#str}}mandatoryanswered, videodiscussion{{/str}}</th>
-                    <th>{{#str}}watchedpercent, videodiscussion{{/str}}</th>{{#canGrade}}
-                    <th>{{#str}}grade, videodiscussion{{/str}} / {{maxgrade}}</th>{{/canGrade}}</tr>
+                    <th>{{#str}}watchedpercent, videodiscussion{{/str}}</th>
+                    {{#canGrade}}
+                        <th>{{#str}}grade, videodiscussion{{/str}} / {{maxgrade}}</th>
+                        <th>{{#str}}feedback, videodiscussion{{/str}}</th>
+                    {{/canGrade}}
+                </tr>
                 </thead>
                 <tbody>
                 {{#rows}}
@@ -52,20 +50,28 @@
                         <td>{{mandatorytext}}</td>
                         <td>{{percent}}%</td>
                         {{#canGrade}}
-                            <td><input class="form-control form-control-sm" style="max-width: 7rem" type="number"
+                            <td>
+                                <input class="form-control form-control-sm" style="max-width: 7rem" type="number"
                                        min="0" max="{{maxgrade}}" step="0.01" name="grades[{{userid}}]"
-                                       value="{{grade}}"></td>{{/canGrade}}
+                                       value="{{grade}}">
+                            </td>
+                            <td>
+                                <input class="form-control form-control-sm" type="text" maxlength="1333"
+                                       name="feedbacks[{{userid}}]" value="{{feedback}}">
+                            </td>
+                        {{/canGrade}}
                     </tr>
                 {{/rows}}
                 {{^hasrows}}
                     <tr>
-                        <td colspan="6">{{#str}}nothingtodisplay{{/str}}</td>
-                    </tr>{{/hasrows}}
+                        <td colspan="7">{{#str}}nothingtodisplay{{/str}}</td>
+                    </tr>
+                {{/hasrows}}
                 </tbody>
             </table>
         </div>
         {{#canGrade}}
-            <button class="btn btn-primary" type="submit">{{#str}}
-                savegrades, videodiscussion{{/str}}</button>{{/canGrade}}
+            <button class="btn btn-primary" type="submit">{{#str}}savegrades, videodiscussion{{/str}}</button>
+        {{/canGrade}}
     </form>
 </div>
