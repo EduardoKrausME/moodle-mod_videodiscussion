@@ -141,7 +141,9 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if (in_array($data['videosource'], ['url', 'youtube', 'vimeo'], true) && empty($data['videourl'])) {
+        if (in_array($data['videosource'], ['url', 'youtube', 'vimeo'], true)
+                && (empty($data['videourl'])
+                    || !\mod_videodiscussion\player::validate_source($data['videosource'], $data['videourl']))) {
             $errors['videourl'] = get_string('invalidvideo', 'videodiscussion');
         }
         if ($data['videosource'] === 'upload') {
