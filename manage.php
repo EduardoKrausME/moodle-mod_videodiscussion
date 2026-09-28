@@ -22,10 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videodiscussion\discussion_manager;
+
 require('../../config.php');
 
 $id = required_param('id', PARAM_INT);
-$delete = optional_param('delete', 0, PARAM_INT);
 $cm = get_coursemodule_from_id('videodiscussion', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $activity = $DB->get_record('videodiscussion', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -37,42 +38,75 @@ $PAGE->set_url('/mod/videodiscussion/manage.php', ['id' => $cm->id]);
 $PAGE->set_title(get_string('managediscussions', 'videodiscussion'));
 $PAGE->set_heading(format_string($course->fullname));
 
-if ($delete) {
-    require_sesskey();
-    $thread = $DB->get_record('videodiscussion_threads', ['id' => $delete, 'videodiscussionid' => $activity->id], '*', MUST_EXIST);
-    $DB->delete_records('videodiscussion_posts', ['threadid' => $thread->id]);
-    $DB->delete_records('videodiscussion_threads', ['id' => $thread->id]);
-    redirect($PAGE->url, get_string('discussiondeleted', 'videodiscussion'));
+$manager = new discussion_manager();
+$groupmode = groups_get_activity_groupmode($cm);
+$currentgroup = groups_get_activity_group($cm, true);
+$canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
+
+$params = ['activityid' => $activity->id];
+$groupsql = '';
+if ($groupmode == NOGROUPS) {
+    $groupsql = ' AND t.groupid = 0';
+} else if ($currentgroup > 0) {
+    $groupsql = ' AND (t.groupid = 0 OR t.groupid = :currentgroup)';
+    $params['currentgroup'] = $currentgroup;
+} else if (!$canaccessallgroups) {
+    $groupsql = ' AND 1 = 0';
 }
 
 $sql = "SELECT t.*, u.firstname, u.lastname
           FROM {videodiscussion_threads} t
      LEFT JOIN {user} u ON u.id = t.userid
-         WHERE t.videodiscussionid = :activityid
-      ORDER BY t.timepoint ASC, t.timecreated ASC";
-$records = $DB->get_records_sql($sql, ['activityid' => $activity->id]);
-$threads = [];
+         WHERE t.videodiscussionid = :activityid {$groupsql}
+      ORDER BY t.teacherprompt DESC, t.timepoint ASC, t.timecreated ASC";
+$records = $DB->get_records_sql($sql, $params);
+
+$teacherthreads = [];
+$studentthreads = [];
 foreach ($records as $thread) {
-    $threads[] = [
+    $manageable = $manager->can_manage_group($cm, $context, $USER->id, (int)$thread->groupid);
+    $row = [
         'id' => $thread->id,
         'timecode' => \mod_videodiscussion\timecode::format((float)$thread->timepoint),
         'subject' => format_string($thread->subject),
-        'author' => $thread->teacherprompt ? get_string('teacherprompt', 'videodiscussion') : fullname($thread),
+        'author' => (int)$thread->userid === 0 ? get_string('deleteduser', 'videodiscussion') : fullname($thread),
+        'group' => (int)$thread->groupid > 0 ? format_string(groups_get_group_name($thread->groupid)) : get_string('allgroups', 'videodiscussion'),
         'mandatory' => !empty($thread->mandatory),
         'requireownpost' => !empty($thread->requireownpost),
-        'editurl' => (new moodle_url('/mod/videodiscussion/discussion/edit.php',
-            ['id' => $cm->id, 'threadid' => $thread->id]))->out(false),
-        'deleteurl' => (new moodle_url('/mod/videodiscussion/manage.php',
-            ['id' => $cm->id, 'delete' => $thread->id, 'sesskey' => sesskey()]))->out(false),
+        'canedit' => !empty($thread->teacherprompt) && $manageable,
+        'candelete' => $manageable,
+        'editurl' => $manageable ? (new moodle_url('/mod/videodiscussion/discussion/edit.php', [
+            'id' => $cm->id,
+            'threadid' => $thread->id,
+        ]))->out(false) : '',
+        'deleteurl' => $manageable ? (new moodle_url('/mod/videodiscussion/discussion/thread_delete.php', [
+            'id' => $cm->id,
+            'threadid' => $thread->id,
+            'sesskey' => sesskey(),
+        ]))->out(false) : '',
     ];
+
+    if (!empty($thread->teacherprompt)) {
+        $teacherthreads[] = $row;
+    } else {
+        $studentthreads[] = $row;
+    }
 }
+
 $data = [
-    'threads' => $threads,
-    'hasthreads' => !empty($threads),
+    'teacherthreads' => $teacherthreads,
+    'hasteacherthreads' => !empty($teacherthreads),
+    'studentthreads' => $studentthreads,
+    'hasstudentthreads' => !empty($studentthreads),
     'addurl' => (new moodle_url('/mod/videodiscussion/discussion/edit.php', ['id' => $cm->id]))->out(false),
     'viewurl' => (new moodle_url('/mod/videodiscussion/view.php', ['id' => $cm->id]))->out(false),
 ];
 
+$PAGE->requires->js_call_amd('mod_videodiscussion/main', 'initConfirmations');
+
 echo $OUTPUT->header();
+if ($groupmode != NOGROUPS) {
+    groups_print_activity_menu($cm, $PAGE->url);
+}
 echo $OUTPUT->render_from_template('mod_videodiscussion/manage', $data);
 echo $OUTPUT->footer();
