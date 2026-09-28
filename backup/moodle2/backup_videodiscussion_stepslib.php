@@ -75,7 +75,7 @@ class backup_videodiscussion_activity_structure_step extends backup_activity_str
         } else {
             $thread->set_source_table('videodiscussion_threads', [
                 'videodiscussionid' => backup::VAR_PARENTID,
-                'teacherprompt' => 1,
+                'teacherprompt' => backup_helper::is_sqlparam(1),
             ]);
         }
 
