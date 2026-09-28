@@ -43,8 +43,8 @@ class custom_completion extends activity_custom_completion {
         $this->validate_rule($rule);
         $activityid = $this->cm->instance;
 
-        if ($rule === 'completionpercent') {
-            $required = (int)($this->cm->customdata['customcompletionrules']['completionpercent'] ?? 0);
+        if ($rule === 'completionwatch') {
+            $required = (int)($this->cm->customdata['customcompletionrules']['completionwatch'] ?? 0);
             $percent = (float)$DB->get_field('videodiscussion_progress', 'percent', [
                 'videodiscussionid' => $activityid,
                 'userid' => $this->userid,
@@ -73,7 +73,7 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public static function get_defined_custom_rules(): array {
-        return ['completionpercent', 'completionmandatory'];
+        return ['completionwatch', 'completionmandatory'];
     }
 
     /**
@@ -82,10 +82,10 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-        $percent = (int)($this->cm->customdata['customcompletionrules']['completionpercent'] ?? 0);
+        $percent = (int)($this->cm->customdata['customcompletionrules']['completionwatch'] ?? 0);
 
         return [
-            'completionpercent' => get_string('completiondetail:percent', 'videodiscussion', $percent),
+            'completionwatch' => get_string('completiondetail:percent', 'videodiscussion', $percent),
             'completionmandatory' => get_string('completiondetail:mandatory', 'videodiscussion'),
         ];
     }
@@ -98,7 +98,7 @@ class custom_completion extends activity_custom_completion {
     public function get_sort_order(): array {
         return [
             'completionview',
-            'completionpercent',
+            'completionwatch',
             'completionmandatory',
             'completionusegrade',
             'completionpassgrade',
