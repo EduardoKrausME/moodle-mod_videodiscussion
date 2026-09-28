@@ -275,6 +275,8 @@ class discussion_manager {
 
             $posts[] = [
                 'id' => (int)$post->id,
+                'threadid' => (int)$thread->id,
+                'groupid' => (int)$post->groupid,
                 'parentid' => (int)$post->parentid,
                 'isreply' => (int)$post->parentid > 0,
                 'author' => (int)$post->userid === 0 ? get_string('deleteduser', 'videodiscussion') : fullname($post),
