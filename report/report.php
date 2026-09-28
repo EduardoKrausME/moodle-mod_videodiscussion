@@ -38,11 +38,34 @@ $PAGE->set_url('/mod/videodiscussion/report/report.php', ['id' => $cm->id]);
 $PAGE->set_title(get_string('report', 'videodiscussion'));
 $PAGE->set_heading(format_string($course->fullname));
 
+$groupmode = groups_get_activity_groupmode($cm);
+$currentgroup = groups_get_activity_group($cm, true);
+$canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
+
+if ($groupmode == SEPARATEGROUPS && !$canaccessallgroups && !$currentgroup) {
+    $users = [];
+} else {
+    $users = get_enrolled_users(
+        $context,
+        'mod/videodiscussion:view',
+        (int)$currentgroup,
+        'u.id,u.firstname,u.lastname,u.email'
+    );
+}
+
+$participantids = [];
+foreach ($users as $participant) {
+    $participantids[(int)$participant->id] = true;
+}
+
 if (data_submitted() && confirm_sesskey() && has_capability('mod/videodiscussion:grade', $context)) {
     $grades = optional_param_array('grades', [], PARAM_RAW_TRIMMED);
     $now = time();
     foreach ($grades as $userid => $rawgrade) {
         $userid = (int)$userid;
+        if (!$userid || !isset($participantids[$userid])) {
+            continue;
+        }
         if ($rawgrade === '') {
             $grade = null;
         } else {
@@ -73,7 +96,6 @@ if (data_submitted() && confirm_sesskey() && has_capability('mod/videodiscussion
     redirect($PAGE->url, get_string('gradessaved', 'videodiscussion'));
 }
 
-$users = get_enrolled_users($context, 'mod/videodiscussion:view', 0, 'u.id,u.firstname,u.lastname,u.email');
 $manager = new discussion_manager();
 $rows = [];
 foreach ($users as $user) {
@@ -113,9 +135,13 @@ foreach ($users as $user) {
         'grade' => $grade && $grade->grade !== null ? format_float((float)$grade->grade, 2) : '',
     ];
 }
+$groupmenu = $groupmode ? groups_print_activity_menu($cm, $PAGE->url, true) : '';
+
 $data = [
     'rows' => $rows,
     'hasrows' => !empty($rows),
+    'hasgroupmenu' => !empty($groupmenu),
+    'groupmenu' => $groupmenu,
     'canGrade' => has_capability('mod/videodiscussion:grade', $context) && (float)$activity->grade > 0,
     'maxgrade' => format_float((float)$activity->grade, 2),
     'actionurl' => $PAGE->url->out(false),

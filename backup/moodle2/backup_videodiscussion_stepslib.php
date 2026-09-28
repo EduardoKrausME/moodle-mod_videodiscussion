@@ -67,11 +67,16 @@ class backup_videodiscussion_activity_structure_step extends backup_activity_str
         $grades->add_child($grade);
 
         $activity->set_source_table('videodiscussion', ['id' => backup::VAR_ACTIVITYID]);
-        $thread->set_source_table('videodiscussion_threads', ['videodiscussionid' => backup::VAR_PARENTID]);
-        $post->set_source_table('videodiscussion_posts', ['threadid' => backup::VAR_PARENTID]);
         if ($userinfo) {
+            $thread->set_source_table('videodiscussion_threads', ['videodiscussionid' => backup::VAR_PARENTID]);
+            $post->set_source_table('videodiscussion_posts', ['threadid' => backup::VAR_PARENTID]);
             $progress->set_source_table('videodiscussion_progress', ['videodiscussionid' => backup::VAR_PARENTID]);
             $grade->set_source_table('videodiscussion_grades', ['videodiscussionid' => backup::VAR_PARENTID]);
+        } else {
+            $thread->set_source_table('videodiscussion_threads', [
+                'videodiscussionid' => backup::VAR_PARENTID,
+                'teacherprompt' => 1,
+            ]);
         }
 
         $thread->annotate_ids('user', 'userid');

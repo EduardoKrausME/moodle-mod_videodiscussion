@@ -274,15 +274,22 @@ class provider implements
         }
         $DB->delete_records('videodiscussion_progress', ['videodiscussionid' => $cm->instance, 'userid' => $userid]);
         $DB->delete_records('videodiscussion_grades', ['videodiscussionid' => $cm->instance, 'userid' => $userid]);
-        $threadids = $DB->get_fieldset_select(
-            'videodiscussion_threads', 'id', 'videodiscussionid = ? AND userid = ?', [$cm->instance, $userid]);
+        $DB->set_field('videodiscussion_grades', 'grader', 0, [
+            'videodiscussionid' => $cm->instance,
+            'grader' => $userid,
+        ]);
+
         $DB->delete_records_select('videodiscussion_posts',
             'userid = ? AND threadid IN (SELECT id FROM {videodiscussion_threads} WHERE videodiscussionid = ?)',
             [$userid, $cm->instance]);
+
+        $threadids = $DB->get_fieldset_select(
+            'videodiscussion_threads', 'id', 'videodiscussionid = ? AND userid = ?', [$cm->instance, $userid]);
         if ($threadids) {
-            [$insql, $params] = $DB->get_in_or_equal($threadids, SQL_PARAMS_QM);
-            $DB->delete_records_select('videodiscussion_posts', "threadid {$insql}", $params);
-            $DB->delete_records_select('videodiscussion_threads', "id {$insql}", $params);
+            [$insql, $params] = $DB->get_in_or_equal($threadids, SQL_PARAMS_NAMED, 'thread');
+            $DB->set_field_select('videodiscussion_threads', 'userid', 0, "id {$insql}", $params);
+            $DB->set_field_select('videodiscussion_threads', 'subject', '', "id {$insql}", $params);
+            $DB->set_field_select('videodiscussion_threads', 'message', '', "id {$insql}", $params);
         }
     }
 }

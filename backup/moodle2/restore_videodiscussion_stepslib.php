@@ -35,8 +35,8 @@ class restore_videodiscussion_activity_structure_step extends restore_activity_s
         $paths = [];
         $paths[] = new restore_path_element('videodiscussion', '/activity/videodiscussion');
         $paths[] = new restore_path_element('videodiscussion_thread', '/activity/videodiscussion/threads/thread');
-        $paths[] = new restore_path_element('videodiscussion_post', '/activity/videodiscussion/threads/thread/posts/post');
         if ($this->get_setting_value('userinfo')) {
+            $paths[] = new restore_path_element('videodiscussion_post', '/activity/videodiscussion/threads/thread/posts/post');
             $paths[] = new restore_path_element('videodiscussion_progress', '/activity/videodiscussion/progresses/progress');
             $paths[] = new restore_path_element('videodiscussion_grade', '/activity/videodiscussion/grades/grade');
         }
