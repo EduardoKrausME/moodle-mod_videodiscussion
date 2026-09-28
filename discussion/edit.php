@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videodiscussion\discussion_manager;
+
 require('../../../config.php');
 
 $id = required_param('id', PARAM_INT);
@@ -34,21 +36,42 @@ require_login($course, true, $cm);
 require_capability('mod/videodiscussion:managediscussions', $context);
 
 $PAGE->set_url('/mod/videodiscussion/discussion/edit.php', ['id' => $cm->id, 'threadid' => $threadid]);
-$PAGE->set_title($threadid ?
-    get_string('editteacherprompt', 'videodiscussion') :
-    get_string('addteacherprompt', 'videodiscussion'));
+$PAGE->set_title($threadid
+    ? get_string('editteacherprompt', 'videodiscussion')
+    : get_string('addteacherprompt', 'videodiscussion'));
 $PAGE->set_heading(format_string($course->fullname));
 
-$groups = groups_get_all_groups($course->id, 0, $cm->groupingid, 'g.id,g.name');
+$manager = new discussion_manager();
+$groupmode = groups_get_activity_groupmode($cm);
+$canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
+$groups = groups_get_all_groups(
+    $course->id,
+    $canaccessallgroups ? 0 : $USER->id,
+    $cm->groupingid,
+    'g.id,g.name'
+);
+$allowallgroups = $groupmode == NOGROUPS || $canaccessallgroups;
+
 $form = new \mod_videodiscussion\form\thread_form(null, [
     'cmid' => $cm->id,
     'threadid' => $threadid,
     'groups' => $groups ?: [],
+    'allowallgroups' => $allowallgroups,
+    'defaultrequireownpost' => !empty($activity->defaultrevealafterpost),
 ]);
+
 $thread = null;
 if ($threadid) {
-    $thread = $DB->get_record('videodiscussion_threads',
-        ['id' => $threadid, 'videodiscussionid' => $activity->id], '*', MUST_EXIST);
+    $thread = $DB->get_record('videodiscussion_threads', [
+        'id' => $threadid,
+        'videodiscussionid' => $activity->id,
+        'teacherprompt' => 1,
+    ], '*', MUST_EXIST);
+
+    if (!$manager->can_manage_group($cm, $context, $USER->id, (int)$thread->groupid)) {
+        throw new moodle_exception('errorgroupaccess', 'videodiscussion');
+    }
+
     $form->set_data((object)[
         'id' => $cm->id,
         'threadid' => $thread->id,
@@ -60,10 +83,16 @@ if ($threadid) {
         'groupid' => $thread->groupid,
     ]);
 }
+
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/mod/videodiscussion/manage.php', ['id' => $cm->id]));
 }
+
 if ($data = $form->get_data()) {
+    if (!$manager->can_manage_group($cm, $context, $USER->id, (int)$data->groupid)) {
+        throw new moodle_exception('errorgroupaccess', 'videodiscussion');
+    }
+
     $timepoint = \mod_videodiscussion\timecode::parse((string)$data->timepointtext);
     $now = time();
     $record = (object)[
@@ -79,16 +108,33 @@ if ($data = $form->get_data()) {
         'teacherprompt' => 1,
         'timemodified' => $now,
     ];
+
     if ($thread) {
         $record->id = $thread->id;
         $record->timecreated = $thread->timecreated;
         $DB->update_record('videodiscussion_threads', $record);
+        $event = \mod_videodiscussion\event\thread_updated::create([
+            'objectid' => $thread->id,
+            'context' => $context,
+        ]);
     } else {
         $record->timecreated = $now;
-        $DB->insert_record('videodiscussion_threads', $record);
+        $record->id = $DB->insert_record('videodiscussion_threads', $record);
+        $event = \mod_videodiscussion\event\thread_created::create([
+            'objectid' => $record->id,
+            'context' => $context,
+        ]);
     }
-    redirect(new moodle_url('/mod/videodiscussion/manage.php',
-        ['id' => $cm->id]), get_string('discussionsaved', 'videodiscussion'));
+    $event->trigger();
+
+    if (!empty($activity->completionmandatory)) {
+        (new completion_info($course))->reset_all_state($cm);
+    }
+
+    redirect(
+        new moodle_url('/mod/videodiscussion/manage.php', ['id' => $cm->id]),
+        get_string('discussionsaved', 'videodiscussion')
+    );
 }
 
 echo $OUTPUT->header();
