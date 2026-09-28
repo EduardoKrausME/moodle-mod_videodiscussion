@@ -35,6 +35,7 @@ function videodiscussion_supports($feature) {
         case FEATURE_GROUPINGS:
         case FEATURE_GRADE_HAS_GRADE:
         case FEATURE_COMPLETION_TRACKS_VIEWS:
+        case FEATURE_COMPLETION_HAS_RULES:
         case FEATURE_SHOW_DESCRIPTION:
         case FEATURE_BACKUP_MOODLE2:
             return true;
@@ -86,11 +87,14 @@ function videodiscussion_add_instance($data, $mform = null) {
 function videodiscussion_update_instance($data, $mform = null) {
     global $DB;
 
+    $old = $DB->get_record('videodiscussion', ['id' => $data->instance], '*', MUST_EXIST);
+    $context = context_module::instance($data->coursemodule);
+    $mediachanged = videodiscussion_media_changed($old, $data, $context);
+
     $data->id = $data->instance;
     $data->timemodified = time();
     $DB->update_record('videodiscussion', $data);
 
-    $context = context_module::instance($data->coursemodule);
     if (isset($data->videofile)) {
         file_save_draft_area_files(
             $data->videofile,
@@ -100,6 +104,13 @@ function videodiscussion_update_instance($data, $mform = null) {
             0,
             ['subdirs' => false, 'maxfiles' => 1]
         );
+    }
+
+    if ($mediachanged) {
+        $DB->delete_records('videodiscussion_progress', ['videodiscussionid' => $data->id]);
+        $course = get_course($data->course);
+        $cm = get_coursemodule_from_id('videodiscussion', $data->coursemodule, 0, false, MUST_EXIST);
+        (new completion_info($course))->reset_all_state($cm);
     }
 
     videodiscussion_grade_item_update($data);
@@ -259,4 +270,100 @@ function videodiscussion_update_grades($activity, $userid = 0, $nullifnone = tru
         $grades[$userid] = (object)['userid' => $userid, 'rawgrade' => null];
     }
     videodiscussion_grade_item_update($activity, $grades ?: null);
+}
+
+
+/**
+ * Returns cached course-module data including custom completion settings.
+ *
+ * @param stdClass $coursemodule
+ * @return cached_cm_info|false
+ */
+function videodiscussion_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $activity = $DB->get_record(
+        'videodiscussion',
+        ['id' => $coursemodule->instance],
+        'id,name,intro,introformat,completionpercent,completionmandatory'
+    );
+    if (!$activity) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $activity->name;
+
+    if ($coursemodule->showdescription) {
+        $result->content = format_module_intro('videodiscussion', $activity, $coursemodule->id, false);
+    }
+
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionpercent'] = (int)$activity->completionpercent;
+        $result->customdata['customcompletionrules']['completionmandatory'] = (int)$activity->completionmandatory;
+    }
+
+    return $result;
+}
+
+/**
+ * Returns human-readable descriptions of active custom completion rules.
+ *
+ * @param cm_info|stdClass $cm
+ * @return array
+ */
+function mod_videodiscussion_get_completion_active_rule_descriptions($cm) {
+    if (empty($cm->customdata['customcompletionrules'])
+            || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+        return [];
+    }
+
+    $descriptions = [];
+    if (!empty($cm->customdata['customcompletionrules']['completionpercent'])) {
+        $descriptions[] = get_string(
+            'completiondetail:percent',
+            'videodiscussion',
+            (int)$cm->customdata['customcompletionrules']['completionpercent']
+        );
+    }
+    if (!empty($cm->customdata['customcompletionrules']['completionmandatory'])) {
+        $descriptions[] = get_string('completiondetail:mandatory', 'videodiscussion');
+    }
+
+    return $descriptions;
+}
+
+/**
+ * Checks whether the configured video changed.
+ *
+ * @param stdClass $old
+ * @param stdClass $new
+ * @param context_module $context
+ * @return bool
+ */
+function videodiscussion_media_changed(stdClass $old, stdClass $new, context_module $context) {
+    if ((string)$old->videosource !== (string)$new->videosource) {
+        return true;
+    }
+
+    if ((string)$new->videosource !== 'upload') {
+        return (string)$old->videourl !== (string)$new->videourl;
+    }
+
+    if (empty($new->videofile)) {
+        return false;
+    }
+
+    global $USER;
+    $fs = get_file_storage();
+    $storedfiles = $fs->get_area_files($context->id, 'mod_videodiscussion', 'video', 0, 'id', false);
+    $storedfile = reset($storedfiles);
+    $storedhash = $storedfile ? $storedfile->get_contenthash() : '';
+
+    $usercontext = context_user::instance($USER->id);
+    $draftfiles = $fs->get_area_files($usercontext->id, 'user', 'draft', (int)$new->videofile, 'id', false);
+    $draftfile = reset($draftfiles);
+    $drafthash = $draftfile ? $draftfile->get_contenthash() : '';
+
+    return $storedhash !== $drafthash;
 }
