@@ -72,10 +72,18 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', 'defaultrevealafterpost', get_string('defaultrevealafterpost', 'videodiscussion'));
         $mform->addHelpButton('defaultrevealafterpost', 'defaultrevealafterpost', 'videodiscussion');
 
-        $mform->addElement('text', 'completionpercent', get_string('completionpercent', 'videodiscussion'), ['size' => 4]);
-        $mform->setType('completionpercent', PARAM_INT);
-        $mform->setDefault('completionpercent', 90);
-        $mform->addHelpButton('completionpercent', 'completionpercent', 'videodiscussion');
+        $editwindows = [
+            0 => get_string('posteditwindowunlimited', 'videodiscussion'),
+            300 => get_string('numminutes', '', 5),
+            900 => get_string('numminutes', '', 15),
+            1800 => get_string('numminutes', '', 30),
+            3600 => get_string('numminutes', '', 60),
+            7200 => get_string('numhours', '', 2),
+            86400 => get_string('numdays', '', 1),
+        ];
+        $mform->addElement('select', 'posteditwindow', get_string('posteditwindow', 'videodiscussion'), $editwindows);
+        $mform->setDefault('posteditwindow', 1800);
+        $mform->addHelpButton('posteditwindow', 'posteditwindow', 'videodiscussion');
 
         $mform->addElement('text', 'grade', get_string('maximumgrade', 'videodiscussion'), ['size' => 5]);
         $mform->setType('grade', PARAM_FLOAT);
@@ -93,6 +101,21 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
      * @return void
      */
     public function data_preprocessing(&$defaultvalues) {
+        parent::data_preprocessing($defaultvalues);
+
+        $suffix = $this->get_suffix();
+        $completionpercentel = 'completionpercent' . $suffix;
+        $completionpercentenabledel = 'completionpercentenabled' . $suffix;
+        $completionmandatoryel = 'completionmandatory' . $suffix;
+
+        $defaultvalues[$completionpercentenabledel] = !empty($defaultvalues[$completionpercentel]) ? 1 : 0;
+        if (empty($defaultvalues[$completionpercentel])) {
+            $defaultvalues[$completionpercentel] = 90;
+        }
+        if (!isset($defaultvalues[$completionmandatoryel])) {
+            $defaultvalues[$completionmandatoryel] = 0;
+        }
+
         if ($this->current && $this->current->id && $this->context) {
             $draftitemid = file_get_submitted_draft_itemid('videofile');
             file_prepare_draft_area(
@@ -126,8 +149,12 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
                 $errors['videofile'] = get_string('invalidvideo', 'videodiscussion');
             }
         }
-        if ((int)$data['completionpercent'] < 1 || (int)$data['completionpercent'] > 100) {
-            $errors['completionpercent'] = get_string('invaliddata', 'error');
+        $suffix = $this->get_suffix();
+        $completionpercentenabledel = 'completionpercentenabled' . $suffix;
+        $completionpercentel = 'completionpercent' . $suffix;
+        if (!empty($data[$completionpercentenabledel])
+                && ((int)$data[$completionpercentel] < 1 || (int)$data[$completionpercentel] > 100)) {
+            $errors[$completionpercentel] = get_string('invaliddata', 'error');
         }
         if ((float)$data['grade'] < 0) {
             $errors['grade'] = get_string('invaliddata', 'error');
@@ -142,5 +169,77 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
             }
         }
         return $errors;
+    }
+
+    /**
+     * Adds custom completion rules.
+     *
+     * @return array
+     */
+    public function add_completion_rules() {
+        $mform = $this->_form;
+        $suffix = $this->get_suffix();
+
+        $group = [];
+        $completionpercentenabledel = 'completionpercentenabled' . $suffix;
+        $group[] =& $mform->createElement(
+            'checkbox',
+            $completionpercentenabledel,
+            '',
+            get_string('completionwatch', 'videodiscussion')
+        );
+        $completionpercentel = 'completionpercent' . $suffix;
+        $group[] =& $mform->createElement('text', $completionpercentel, '', ['size' => 3]);
+        $group[] =& $mform->createElement('static', '', '', '%');
+        $mform->setType($completionpercentel, PARAM_INT);
+        $completionpercentgroupel = 'completionpercentgroup' . $suffix;
+        $mform->addGroup($group, $completionpercentgroupel, '', ' ', false);
+        $mform->hideIf($completionpercentel, $completionpercentenabledel, 'notchecked');
+
+        $completionmandatoryel = 'completionmandatory' . $suffix;
+        $mform->addElement(
+            'checkbox',
+            $completionmandatoryel,
+            '',
+            get_string('completionmandatory', 'videodiscussion')
+        );
+
+        return [$completionpercentgroupel, $completionmandatoryel];
+    }
+
+    /**
+     * Checks whether at least one custom completion rule is enabled.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function completion_rule_enabled($data) {
+        $suffix = $this->get_suffix();
+        return (!empty($data['completionpercentenabled' . $suffix])
+                && (int)$data['completionpercent' . $suffix] > 0)
+            || !empty($data['completionmandatory' . $suffix]);
+    }
+
+    /**
+     * Normalises custom completion fields.
+     *
+     * @param stdClass $data
+     * @return void
+     */
+    public function data_postprocessing($data) {
+        parent::data_postprocessing($data);
+
+        if (!empty($data->completionunlocked)) {
+            $suffix = $this->get_suffix();
+            $completion = $data->{'completion' . $suffix};
+            $automatic = !empty($completion) && $completion == COMPLETION_TRACKING_AUTOMATIC;
+
+            if (!$automatic || empty($data->{'completionpercentenabled' . $suffix})) {
+                $data->{'completionpercent' . $suffix} = 0;
+            }
+            if (!$automatic) {
+                $data->{'completionmandatory' . $suffix} = 0;
+            }
+        }
     }
 }
