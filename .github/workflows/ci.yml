@@ -2,6 +2,10 @@ name: Moodle Plugin CI
 
 on: [push, pull_request]
 
+concurrency:
+  group: moodle-plugin-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-22.04
