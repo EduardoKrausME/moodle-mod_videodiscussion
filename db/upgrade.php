@@ -51,7 +51,7 @@ function xmldb_videodiscussion_upgrade($oldversion) {
         }
 
         $field = new xmldb_field(
-            'completionmandatory',
+            'completionwatch',
             XMLDB_TYPE_INTEGER,
             '1',
             null,
@@ -59,6 +59,20 @@ function xmldb_videodiscussion_upgrade($oldversion) {
             null,
             '0',
             'completionpercent'
+        );
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field(
+            'completionmandatory',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'completionwatch'
         );
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
