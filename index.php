@@ -25,6 +25,11 @@
 require('../../config.php');
 
 $id = required_param('id', PARAM_INT);
+
+if (class_exists('\\core_courseformat\\activityoverviewbase')) {
+    \core_courseformat\activityoverviewbase::redirect_to_overview_page($id, 'videodiscussion');
+}
+
 $course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 require_course_login($course);
 
