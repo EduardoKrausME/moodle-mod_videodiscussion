@@ -16,6 +16,7 @@
                 <FIELD NAME="defaultrevealafterpost" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="posteditwindow" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1800" SEQUENCE="false"/>
                 <FIELD NAME="completionpercent" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="90" SEQUENCE="false"/>
+                <FIELD NAME="completionwatch" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="completionmandatory" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="grade" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="100"
                        SEQUENCE="false"/>
