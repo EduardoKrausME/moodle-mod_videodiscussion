@@ -26,7 +26,11 @@
  * Class restore_videodiscussion_activity_structure_step.
  */
 class restore_videodiscussion_activity_structure_step extends restore_activity_structure_step {
-    /** @return restore_path_element[] */
+    /** 
+     * Function define_structure
+     *
+     * @return restore_path_element[]
+     */
     protected function define_structure() {
         $paths = [];
         $paths[] = new restore_path_element('videodiscussion', '/activity/videodiscussion');
