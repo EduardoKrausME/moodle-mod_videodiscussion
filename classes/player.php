@@ -90,6 +90,26 @@ class player {
     }
 
     /**
+     * Validates an external video source.
+     *
+     * @param string $source
+     * @param string $url
+     * @return bool
+     */
+    public static function validate_source(string $source, string $url): bool {
+        if ($source === 'youtube') {
+            return self::youtube_id($url) !== '';
+        }
+        if ($source === 'vimeo') {
+            return self::vimeo_id($url) !== '';
+        }
+        if ($source === 'url') {
+            return (bool)preg_match('~^https?://~i', $url) && filter_var($url, FILTER_VALIDATE_URL) !== false;
+        }
+        return $source === 'upload';
+    }
+
+    /**
      * youtube_id
      *
      * @param string $url
