@@ -37,8 +37,8 @@ class backup_videodiscussion_activity_structure_step extends backup_activity_str
 
         $activity = new backup_nested_element('videodiscussion', ['id'], [
             'name', 'intro', 'introformat', 'videosource', 'videourl', 'allowstudentthreads',
-            'defaultrevealafterpost', 'posteditwindow', 'completionpercent', 'completionmandatory',
-            'grade', 'timecreated', 'timemodified',
+            'defaultrevealafterpost', 'posteditwindow', 'completionpercent', 'completionwatch',
+            'completionmandatory', 'grade', 'timecreated', 'timemodified',
         ]);
         $threads = new backup_nested_element('threads');
         $thread = new backup_nested_element('thread', ['id'], [
