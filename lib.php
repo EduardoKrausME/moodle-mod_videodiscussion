@@ -285,7 +285,7 @@ function videodiscussion_get_coursemodule_info($coursemodule) {
     $activity = $DB->get_record(
         'videodiscussion',
         ['id' => $coursemodule->instance],
-        'id,name,intro,introformat,completionpercent,completionmandatory'
+        'id,name,intro,introformat,completionpercent,completionwatch,completionmandatory'
     );
     if (!$activity) {
         return false;
@@ -299,7 +299,9 @@ function videodiscussion_get_coursemodule_info($coursemodule) {
     }
 
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $result->customdata['customcompletionrules']['completionpercent'] = (int)$activity->completionpercent;
+        $result->customdata['customcompletionrules']['completionwatch'] = !empty($activity->completionwatch)
+            ? (int)$activity->completionpercent
+            : 0;
         $result->customdata['customcompletionrules']['completionmandatory'] = (int)$activity->completionmandatory;
     }
 
@@ -319,11 +321,11 @@ function mod_videodiscussion_get_completion_active_rule_descriptions($cm) {
     }
 
     $descriptions = [];
-    if (!empty($cm->customdata['customcompletionrules']['completionpercent'])) {
+    if (!empty($cm->customdata['customcompletionrules']['completionwatch'])) {
         $descriptions[] = get_string(
             'completiondetail:percent',
             'videodiscussion',
-            (int)$cm->customdata['customcompletionrules']['completionpercent']
+            (int)$cm->customdata['customcompletionrules']['completionwatch']
         );
     }
     if (!empty($cm->customdata['customcompletionrules']['completionmandatory'])) {
