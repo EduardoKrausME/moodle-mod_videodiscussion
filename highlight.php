@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videodiscussion\discussion_manager;
+
 require('../../config.php');
 
 $id = required_param('id', PARAM_INT);
@@ -35,14 +37,28 @@ require_login($course, true, $cm);
 require_capability('mod/videodiscussion:highlight', $context);
 
 $post = $DB->get_record_sql(
-    "SELECT p.*
+    "SELECT p.*, t.videodiscussionid
        FROM {videodiscussion_posts} p
        JOIN {videodiscussion_threads} t ON t.id = p.threadid
       WHERE p.id = :postid AND t.videodiscussionid = :activityid",
     ['postid' => $postid, 'activityid' => $cm->instance],
     MUST_EXIST
 );
+
+$manager = new discussion_manager();
+if (!$manager->can_manage_group($cm, $context, $USER->id, (int)$post->groupid)) {
+    throw new moodle_exception('errorgroupaccess', 'videodiscussion');
+}
+
 $post->highlighted = empty($post->highlighted) ? 1 : 0;
 $post->timemodified = time();
 $DB->update_record('videodiscussion_posts', $post);
+
+$event = \mod_videodiscussion\event\post_highlight_updated::create([
+    'objectid' => $post->id,
+    'context' => $context,
+    'other' => ['threadid' => $post->threadid],
+]);
+$event->trigger();
+
 redirect(new moodle_url('/mod/videodiscussion/view.php', ['id' => $cm->id], 'thread-' . $post->threadid));
