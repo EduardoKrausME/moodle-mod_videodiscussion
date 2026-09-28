@@ -72,6 +72,9 @@ class save_progress extends external_api {
         self::validate_context($context);
         require_capability('mod/videodiscussion:view', $context);
         $activity = $DB->get_record('videodiscussion', ['id' => $cm->instance], '*', MUST_EXIST);
+        if (strlen($params['segmentsjson']) > 100000) {
+            throw new \invalid_parameter_exception('Watched segments payload is too large.');
+        }
         $segments = json_decode($params['segmentsjson'], true);
         if (!is_array($segments)) {
             $segments = [];
@@ -83,6 +86,12 @@ class save_progress extends external_api {
             (float)$params['lastposition'],
             $segments
         );
+        $course = get_course($cm->course);
+        $completion = new \completion_info($course);
+        if ($completion->is_enabled($cm)) {
+            $completion->update_state($cm, COMPLETION_UNKNOWN, $USER->id);
+        }
+
         return ['percent' => (float)$record->percent, 'lastposition' => (float)$record->lastposition];
     }
 
