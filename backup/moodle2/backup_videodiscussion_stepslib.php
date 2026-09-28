@@ -37,7 +37,8 @@ class backup_videodiscussion_activity_structure_step extends backup_activity_str
 
         $activity = new backup_nested_element('videodiscussion', ['id'], [
             'name', 'intro', 'introformat', 'videosource', 'videourl', 'allowstudentthreads',
-            'defaultrevealafterpost', 'completionpercent', 'grade', 'timecreated', 'timemodified',
+            'defaultrevealafterpost', 'posteditwindow', 'completionpercent', 'completionmandatory',
+            'grade', 'timecreated', 'timemodified',
         ]);
         $threads = new backup_nested_element('threads');
         $thread = new backup_nested_element('thread', ['id'], [
@@ -73,10 +74,13 @@ class backup_videodiscussion_activity_structure_step extends backup_activity_str
             $progress->set_source_table('videodiscussion_progress', ['videodiscussionid' => backup::VAR_PARENTID]);
             $grade->set_source_table('videodiscussion_grades', ['videodiscussionid' => backup::VAR_PARENTID]);
         } else {
-            $thread->set_source_table('videodiscussion_threads', [
-                'videodiscussionid' => backup::VAR_PARENTID,
-                'teacherprompt' => backup_helper::is_sqlparam(1),
-            ]);
+            $thread->set_source_sql(
+                "SELECT id, videodiscussionid, 0 AS userid, groupid, timepoint, subject, message, messageformat,
+                        mandatory, requireownpost, teacherprompt, timecreated, timemodified
+                   FROM {videodiscussion_threads}
+                  WHERE videodiscussionid = ? AND teacherprompt = ?",
+                [backup::VAR_PARENTID, backup_helper::is_sqlparam(1)]
+            );
         }
 
         $thread->annotate_ids('user', 'userid');
