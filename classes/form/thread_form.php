@@ -61,11 +61,19 @@ class thread_form extends moodleform {
         $mform->addElement('advcheckbox', 'requireownpost', get_string('requireownpost', 'videodiscussion'));
         $mform->setDefault('requireownpost', empty($custom['defaultrequireownpost']) ? 0 : 1);
 
-        $groups = [0 => get_string('allgroups', 'videodiscussion')];
+        $groups = [];
+        if (!empty($custom['allowallgroups'])) {
+            $groups[0] = get_string('allgroups', 'videodiscussion');
+        }
         foreach ($custom['groups'] as $group) {
             $groups[$group->id] = format_string($group->name);
         }
-        $mform->addElement('select', 'groupid', get_string('group', 'videodiscussion'), $groups);
+        if (!$groups) {
+            $mform->addElement('hidden', 'groupid', 0);
+            $mform->setType('groupid', PARAM_INT);
+        } else {
+            $mform->addElement('select', 'groupid', get_string('group', 'videodiscussion'), $groups);
+        }
         $this->add_action_buttons(true, get_string('savechanges'));
     }
 
