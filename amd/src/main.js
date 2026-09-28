@@ -21,7 +21,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['core/ajax', 'core/notification'], function(Ajax, Notification) {
+define(['core/ajax', 'core/notification', 'core/str'], function(Ajax, Notification, Str) {
+
+    let confirmationsInitialised = false;
 
     const loadScript = (src, test) => new Promise((resolve, reject) => {
         if (test()) {
@@ -217,6 +219,44 @@ define(['core/ajax', 'core/notification'], function(Ajax, Notification) {
         return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     };
 
+    const initConfirmations = () => {
+        if (confirmationsInitialised) {
+            return;
+        }
+
+        confirmationsInitialised = true;
+        document.addEventListener('click', async event => {
+            const link = event.target.closest('[data-confirm-delete]');
+            if (!link) {
+                return;
+            }
+
+            event.preventDefault();
+
+            try {
+                const strings = await Str.get_strings([
+                    {key: 'confirm'},
+                    {key: 'delete'},
+                    {key: 'cancel'},
+                    {key: 'deleteconfirm', component: 'videodiscussion'}
+                ]);
+                const message = link.dataset.confirmMessage || strings[3];
+
+                Notification.confirm(
+                    strings[0],
+                    message,
+                    strings[1],
+                    strings[2],
+                    () => {
+                        window.location.href = link.href;
+                    }
+                );
+            } catch (error) {
+                Notification.exception(error);
+            }
+        });
+    };
+
     const makeAdapter = root => {
         const html5 = root.querySelector('[data-region="html5-player"]');
         if (html5) {
@@ -268,6 +308,8 @@ define(['core/ajax', 'core/notification'], function(Ajax, Notification) {
             Notification.exception(error);
             return;
         }
+
+        initConfirmations();
 
         const adapter = makeAdapter(root);
 
@@ -344,6 +386,28 @@ define(['core/ajax', 'core/notification'], function(Ajax, Notification) {
                 }
             });
         }
+
+        root.querySelectorAll('[data-action="reply-to-post"]').forEach(button => {
+            button.addEventListener('click', () => {
+                const post = button.closest('.vd-post');
+                if (!post) {
+                    return;
+                }
+
+                const form = post.querySelector('[data-region="post-reply-form"]');
+                if (!form) {
+                    return;
+                }
+
+                form.classList.toggle('d-none');
+                if (!form.classList.contains('d-none')) {
+                    const textarea = form.querySelector('textarea[name="message"]');
+                    if (textarea) {
+                        textarea.focus();
+                    }
+                }
+            });
+        });
 
         let segments = Array.isArray(config.segments)
             ? config.segments
@@ -436,6 +500,7 @@ define(['core/ajax', 'core/notification'], function(Ajax, Notification) {
     };
 
     return {
-        init: init
+        init: init,
+        initConfirmations: initConfirmations
     };
 });
