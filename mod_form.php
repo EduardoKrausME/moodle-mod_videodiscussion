@@ -105,10 +105,12 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
 
         $suffix = $this->get_suffix();
         $completionpercentel = 'completionpercent' . $suffix;
-        $completionpercentenabledel = 'completionpercentenabled' . $suffix;
+        $completionwatchel = 'completionwatch' . $suffix;
         $completionmandatoryel = 'completionmandatory' . $suffix;
 
-        $defaultvalues[$completionpercentenabledel] = !empty($defaultvalues[$completionpercentel]) ? 1 : 0;
+        if (empty($this->_instance) && !isset($defaultvalues[$completionwatchel])) {
+            $defaultvalues[$completionwatchel] = 1;
+        }
         if (empty($defaultvalues[$completionpercentel])) {
             $defaultvalues[$completionpercentel] = 90;
         }
@@ -150,9 +152,9 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
             }
         }
         $suffix = $this->get_suffix();
-        $completionpercentenabledel = 'completionpercentenabled' . $suffix;
+        $completionwatchel = 'completionwatch' . $suffix;
         $completionpercentel = 'completionpercent' . $suffix;
-        if (!empty($data[$completionpercentenabledel])
+        if (!empty($data[$completionwatchel])
                 && ((int)$data[$completionpercentel] < 1 || (int)$data[$completionpercentel] > 100)) {
             $errors[$completionpercentel] = get_string('invaliddata', 'error');
         }
@@ -181,10 +183,10 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
         $suffix = $this->get_suffix();
 
         $group = [];
-        $completionpercentenabledel = 'completionpercentenabled' . $suffix;
+        $completionwatchel = 'completionwatch' . $suffix;
         $group[] =& $mform->createElement(
             'checkbox',
-            $completionpercentenabledel,
+            $completionwatchel,
             '',
             get_string('completionwatch', 'videodiscussion')
         );
@@ -194,7 +196,7 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
         $mform->setType($completionpercentel, PARAM_INT);
         $completionpercentgroupel = 'completionpercentgroup' . $suffix;
         $mform->addGroup($group, $completionpercentgroupel, '', ' ', false);
-        $mform->hideIf($completionpercentel, $completionpercentenabledel, 'notchecked');
+        $mform->hideIf($completionpercentel, $completionwatchel, 'notchecked');
 
         $completionmandatoryel = 'completionmandatory' . $suffix;
         $mform->addElement(
@@ -215,7 +217,7 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
      */
     public function completion_rule_enabled($data) {
         $suffix = $this->get_suffix();
-        return (!empty($data['completionpercentenabled' . $suffix])
+        return (!empty($data['completionwatch' . $suffix])
                 && (int)$data['completionpercent' . $suffix] > 0)
             || !empty($data['completionmandatory' . $suffix]);
     }
@@ -234,10 +236,8 @@ class mod_videodiscussion_mod_form extends moodleform_mod {
             $completion = $data->{'completion' . $suffix};
             $automatic = !empty($completion) && $completion == COMPLETION_TRACKING_AUTOMATIC;
 
-            if (!$automatic || empty($data->{'completionpercentenabled' . $suffix})) {
-                $data->{'completionpercent' . $suffix} = 0;
-            }
             if (!$automatic) {
+                $data->{'completionwatch' . $suffix} = 0;
                 $data->{'completionmandatory' . $suffix} = 0;
             }
         }
