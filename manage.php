@@ -70,7 +70,8 @@ foreach ($records as $thread) {
         'timecode' => \mod_videodiscussion\timecode::format((float)$thread->timepoint),
         'subject' => format_string($thread->subject),
         'author' => (int)$thread->userid === 0 ? get_string('deleteduser', 'videodiscussion') : fullname($thread),
-        'group' => (int)$thread->groupid > 0 ? format_string(groups_get_group_name($thread->groupid)) : get_string('allgroups', 'videodiscussion'),
+        'group' => (int)$thread->groupid > 0 ? format_string(groups_get_group_name($thread->groupid)) :
+            get_string('allgroups', 'videodiscussion'),
         'mandatory' => !empty($thread->mandatory),
         'requireownpost' => !empty($thread->requireownpost),
         'canedit' => !empty($thread->teacherprompt) && $manageable,
