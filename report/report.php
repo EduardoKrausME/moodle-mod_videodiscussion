@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\report_manager;
 
 require('../../../config.php');
 
@@ -40,101 +40,65 @@ $PAGE->set_heading(format_string($course->fullname));
 
 $groupmode = groups_get_activity_groupmode($cm);
 $currentgroup = groups_get_activity_group($cm, true);
-$canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
-
-if ($groupmode == SEPARATEGROUPS && !$canaccessallgroups && !$currentgroup) {
-    $users = [];
-} else {
-    $users = get_enrolled_users(
-        $context,
-        'mod/videodiscussion:view',
-        (int)$currentgroup,
-        'u.id,u.firstname,u.lastname,u.email'
-    );
-}
-
-$participantids = [];
-foreach ($users as $participant) {
-    $participantids[(int)$participant->id] = true;
-}
+$reportmanager = new report_manager();
+$users = $reportmanager->get_participants($context, $cm, (int)$currentgroup);
+$participantids = $reportmanager->participant_lookup($users);
 
 if (data_submitted() && confirm_sesskey() && has_capability('mod/videodiscussion:grade', $context)) {
     $grades = optional_param_array('grades', [], PARAM_RAW_TRIMMED);
+    $feedbacks = optional_param_array('feedbacks', [], PARAM_TEXT);
     $now = time();
-    foreach ($grades as $userid => $rawgrade) {
-        $userid = (int)$userid;
-        if (!$userid || !isset($participantids[$userid])) {
-            continue;
-        }
+
+    foreach ($participantids as $userid => $unused) {
+        $rawgrade = $grades[$userid] ?? '';
+        $feedback = trim((string)($feedbacks[$userid] ?? ''));
+
         if ($rawgrade === '') {
             $grade = null;
+        } else if (!is_numeric($rawgrade)) {
+            continue;
         } else {
             $grade = max(0, min((float)$activity->grade, (float)$rawgrade));
         }
+
         $existing = $DB->get_record('videodiscussion_grades', [
             'videodiscussionid' => $activity->id,
             'userid' => $userid,
         ]);
+
         if ($existing) {
             $existing->grade = $grade;
+            $existing->feedback = $feedback;
             $existing->grader = $USER->id;
             $existing->timemodified = $now;
             $DB->update_record('videodiscussion_grades', $existing);
+            $gradeid = $existing->id;
         } else {
-            $DB->insert_record('videodiscussion_grades', (object)[
+            $gradeid = $DB->insert_record('videodiscussion_grades', (object)[
                 'videodiscussionid' => $activity->id,
                 'userid' => $userid,
                 'grader' => $USER->id,
                 'grade' => $grade,
-                'feedback' => '',
+                'feedback' => $feedback,
                 'timecreated' => $now,
                 'timemodified' => $now,
             ]);
         }
+
         videodiscussion_update_grades($activity, $userid, true);
+
+        $event = \mod_videodiscussion\event\grade_updated::create([
+            'objectid' => $gradeid,
+            'context' => $context,
+            'relateduserid' => $userid,
+        ]);
+        $event->trigger();
     }
+
     redirect($PAGE->url, get_string('gradessaved', 'videodiscussion'));
 }
 
-$manager = new discussion_manager();
-$rows = [];
-foreach ($users as $user) {
-    $usergroups = groups_get_all_groups($course->id, $user->id, $cm->groupingid, 'g.id');
-    $groupids = $usergroups ? array_map('intval', array_keys($usergroups)) : [];
-    $comments = $DB->count_records('videodiscussion_threads', [
-        'videodiscussionid' => $activity->id,
-        'userid' => $user->id,
-        'teacherprompt' => 0,
-    ]);
-    $replies = $DB->count_records_sql(
-        "SELECT COUNT(1)
-           FROM {videodiscussion_posts} p
-           JOIN {videodiscussion_threads} t ON t.id = p.threadid
-          WHERE t.videodiscussionid = :activityid AND p.userid = :userid",
-        ['activityid' => $activity->id, 'userid' => $user->id]
-    );
-    $mandatory = $manager->mandatory_stats($activity->id, $user->id, $groupids);
-    $progress = $DB->get_record('videodiscussion_progress', [
-        'videodiscussionid' => $activity->id,
-        'userid' => $user->id,
-    ]);
-    $grade = $DB->get_record('videodiscussion_grades', [
-        'videodiscussionid' => $activity->id,
-        'userid' => $user->id,
-    ]);
-    $rows[] = [
-        'userid' => $user->id,
-        'name' => fullname($user),
-        'profileurl' => (new moodle_url('/user/view.php', ['id' => $user->id, 'course' => $course->id]))->out(false),
-        'comments' => $comments,
-        'replies' => $replies,
-        'mandatoryanswered' => $mandatory['answered'],
-        'mandatorytotal' => $mandatory['total'],
-        'mandatorytext' => $mandatory['answered'] . '/' . $mandatory['total'],
-        'percent' => $progress ? round((float)$progress->percent, 2) : 0,
-        'grade' => $grade && $grade->grade !== null ? format_float((float)$grade->grade, 2) : '',
-    ];
-}
+$rows = $reportmanager->get_rows($course, $cm, $activity, $users, (int)$currentgroup);
 $groupmenu = $groupmode ? groups_print_activity_menu($cm, $PAGE->url, true) : '';
 
 $data = [
