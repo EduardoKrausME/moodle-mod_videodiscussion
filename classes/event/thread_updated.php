@@ -28,24 +28,47 @@ namespace mod_videodiscussion\event;
  * thread updated event.
  */
 class thread_updated extends \core\event\base {
+    /**
+     * Initialise the event data.
+     */
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'videodiscussion_threads';
     }
 
+    /**
+     * Return the localised event name.
+     *
+     * @return string
+     */
     public static function get_name() {
         return get_string('eventthreadupdated', 'videodiscussion');
     }
 
+    /**
+     * Return the event description.
+     *
+     * @return string
+     */
     public function get_description() {
         return "The user with id '{$this->userid}' updated video discussion thread '{$this->objectid}'.";
     }
 
+    /**
+     * Return the event URL.
+     *
+     * @return \moodle_url
+     */
     public function get_url() {
         return new \moodle_url('/mod/videodiscussion/view.php', ['id' => $this->contextinstanceid]);
     }
 
+    /**
+     * Return the object ID mapping used during restore.
+     *
+     * @return array
+     */
     public static function get_objectid_mapping() {
         return ['db' => 'videodiscussion_threads', 'restore' => 'videodiscussion_thread'];
     }

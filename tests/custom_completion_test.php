@@ -29,6 +29,8 @@ use mod_videodiscussion\completion\custom_completion;
 
 /**
  * Tests custom completion rules.
+ *
+ * @covers \mod_videodiscussion\completion\custom_completion
  */
 final class custom_completion_test extends advanced_testcase {
     /**

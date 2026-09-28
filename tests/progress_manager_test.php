@@ -28,6 +28,8 @@ use advanced_testcase;
 
 /**
  * Tests watched-segment tracking.
+ *
+ * @covers \mod_videodiscussion\progress_manager
  */
 final class progress_manager_test extends advanced_testcase {
     /**

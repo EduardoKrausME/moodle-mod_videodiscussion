@@ -28,28 +28,56 @@ namespace mod_videodiscussion\event;
  * post deleted event.
  */
 class post_deleted extends \core\event\base {
+    /**
+     * Initialise the event data.
+     */
     protected function init() {
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'videodiscussion_posts';
     }
 
+    /**
+     * Return the localised event name.
+     *
+     * @return string
+     */
     public static function get_name() {
         return get_string('eventpostdeleted', 'videodiscussion');
     }
 
+    /**
+     * Return the event description.
+     *
+     * @return string
+     */
     public function get_description() {
         return "The user with id '{$this->userid}' deleted video discussion post '{$this->objectid}'.";
     }
 
+    /**
+     * Return the event URL.
+     *
+     * @return \moodle_url
+     */
     public function get_url() {
         return new \moodle_url('/mod/videodiscussion/view.php', ['id' => $this->contextinstanceid]);
     }
 
+    /**
+     * Return the object ID mapping used during restore.
+     *
+     * @return array
+     */
     public static function get_objectid_mapping() {
         return ['db' => 'videodiscussion_posts', 'restore' => 'videodiscussion_post'];
     }
 
+    /**
+     * Return the additional mappings used during restore.
+     *
+     * @return array
+     */
     protected function get_other_mapping() {
         return ['threadid' => ['db' => 'videodiscussion_threads', 'restore' => 'videodiscussion_thread']];
     }

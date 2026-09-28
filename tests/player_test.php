@@ -28,6 +28,8 @@ use advanced_testcase;
 
 /**
  * Tests video source validation.
+ *
+ * @covers \mod_videodiscussion\player
  */
 final class player_test extends advanced_testcase {
     /**

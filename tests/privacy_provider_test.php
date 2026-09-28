@@ -31,6 +31,8 @@ use mod_videodiscussion\privacy\provider;
 
 /**
  * Tests privacy deletion semantics.
+ *
+ * @covers \mod_videodiscussion\privacy\provider
  */
 final class privacy_provider_test extends advanced_testcase {
     /**

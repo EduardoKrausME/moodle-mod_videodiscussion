@@ -28,6 +28,8 @@ use advanced_testcase;
 
 /**
  * Tests group-scoped participation aggregation.
+ *
+ * @covers \mod_videodiscussion\report_manager
  */
 final class report_manager_test extends advanced_testcase {
     /**

@@ -28,24 +28,47 @@ namespace mod_videodiscussion\event;
  * Participation grade updated.
  */
 class grade_updated extends \core\event\base {
+    /**
+     * Initialise the event data.
+     */
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
         $this->data['objecttable'] = 'videodiscussion_grades';
     }
 
+    /**
+     * Return the localised event name.
+     *
+     * @return string
+     */
     public static function get_name() {
         return get_string('eventgradeupdated', 'videodiscussion');
     }
 
+    /**
+     * Return the event description.
+     *
+     * @return string
+     */
     public function get_description() {
         return "The user with id '{$this->userid}' updated the video discussion grade for user '{$this->relateduserid}'.";
     }
 
+    /**
+     * Return the event URL.
+     *
+     * @return \moodle_url
+     */
     public function get_url() {
         return new \moodle_url('/mod/videodiscussion/report/report.php', ['id' => $this->contextinstanceid]);
     }
 
+    /**
+     * Return the object ID mapping used during restore.
+     *
+     * @return array
+     */
     public static function get_objectid_mapping() {
         return ['db' => 'videodiscussion_grades', 'restore' => 'videodiscussion_grade'];
     }
