@@ -30,7 +30,7 @@ later.
 
 ## Installation
 
-Copy the plugin directory to `mod/videodiscussion` and visit Site administration > Notifications.
+Download the packaged ZIP asset from the GitHub Releases page (for example `mod_videodiscussion_X.Y.Z.zip`) and install it through Site administration > Plugins > Install plugins, or extract the `videodiscussion` directory to `mod/videodiscussion` and visit Site administration > Notifications.\n\nDo not use GitHub's automatic **Source code (zip)** or branch **Download ZIP** archives for Moodle installation. Those archives use a repository-derived root directory such as `moodle-mod_videodiscussion-master`, while Moodle requires the ZIP root directory to be exactly `videodiscussion`.
 
 ## License
 
