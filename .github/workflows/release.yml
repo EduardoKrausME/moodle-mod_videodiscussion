@@ -36,16 +36,26 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ steps.ver.outputs.version }}"
+          ARCHIVE="mod_videodiscussion_${VERSION}.zip"
+
           rm -rf package
           mkdir -p package/videodiscussion
           git archive --format=tar HEAD | tar -x -C package/videodiscussion
           rm -rf package/videodiscussion/.github
+
           (
             cd package
-            zip -rq "../mod_videodiscussion_${VERSION}.zip" videodiscussion
+            zip -rq "../${ARCHIVE}" videodiscussion
           )
-          if unzip -l "mod_videodiscussion_${VERSION}.zip" | grep -q '/\.git/'; then
-            echo "The release archive unexpectedly contains .git."
+
+          ROOTS="$(unzip -Z1 "$ARCHIVE" | awk -F/ 'NF > 1 && $1 != "" {print $1}' | sort -u)"
+          if [ "$ROOTS" != "videodiscussion" ]; then
+            echo "Invalid Moodle plugin ZIP root: '$ROOTS'. Expected exactly 'videodiscussion'."
+            exit 1
+          fi
+
+          if unzip -Z1 "$ARCHIVE" | grep -Eq '(^|/)\.git(/|$)|(^|/)\.github(/|$)'; then
+            echo "The release archive unexpectedly contains development metadata."
             exit 1
           fi
 
