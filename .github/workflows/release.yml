@@ -31,6 +31,17 @@ jobs:
             echo "No valid release version in commit message: '$MSG'."
           fi
 
+      - name: Run Moodle plugin finishing checks
+        if: steps.ver.outputs.version != ''
+        shell: bash
+        run: |
+          rm -rf /tmp/moodle-plugin-validate
+          git clone --depth 1 --branch master \
+            https://github.com/EduardoKrausME/moodle-plugin-validate.git \
+            /tmp/moodle-plugin-validate
+          python3 /tmp/moodle-plugin-validate/.chatgpt/run.py \
+            --check "$GITHUB_WORKSPACE"
+
       - name: Build clean Moodle plugin archive
         if: steps.ver.outputs.version != ''
         shell: bash
