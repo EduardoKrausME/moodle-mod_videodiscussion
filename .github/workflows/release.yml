@@ -42,9 +42,18 @@ jobs:
           rm -rf package/videodiscussion/.github
           (
             cd package
-            zip -rq "../mod_videodiscussion_${VERSION}.zip" videodiscussion
+            zip -rq "../videodiscussion.zip" videodiscussion
           )
-          if unzip -l "mod_videodiscussion_${VERSION}.zip" | grep -q '/\.git/'; then
+          ROOTS="$(unzip -Z1 "videodiscussion.zip" | cut -d/ -f1 | sort -u)"
+          if [ "$ROOTS" != "videodiscussion" ]; then
+            echo "Invalid Moodle plugin archive root: '$ROOTS' (expected 'videodiscussion')."
+            exit 1
+          fi
+          if ! unzip -Z1 "videodiscussion.zip" | grep -qx 'videodiscussion/version.php'; then
+            echo "The release archive does not contain videodiscussion/version.php."
+            exit 1
+          fi
+          if unzip -l "videodiscussion.zip" | grep -q '/\.git/'; then
             echo "The release archive unexpectedly contains .git."
             exit 1
           fi
@@ -68,7 +77,11 @@ jobs:
           body: |
             Release ${{ steps.ver.outputs.version }} automatically generated from commit
             ${{ github.event.head_commit.id }}.
-          files: mod_videodiscussion_${{ steps.ver.outputs.version }}.zip
+
+            Moodle installation package: **videodiscussion.zip**.
+            Use the attached asset below for "Install plugin from ZIP file".
+            GitHub's automatic "Source code (zip)" archive is not a Moodle installation package.
+          files: videodiscussion.zip
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}

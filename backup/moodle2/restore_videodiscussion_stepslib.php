@@ -73,7 +73,16 @@ class restore_videodiscussion_activity_structure_step extends restore_activity_s
         $data = (object)$data;
         $oldid = $data->id;
         $data->videodiscussionid = $this->get_new_parentid('videodiscussion');
-        $data->userid = $this->get_mappingid('user', $data->userid, 0);
+
+        if (!$this->get_setting_value('userinfo')) {
+            if (empty($data->teacherprompt)) {
+                return;
+            }
+            $data->userid = 0;
+        } else {
+            $data->userid = $this->get_mappingid('user', $data->userid, 0);
+        }
+
         $data->groupid = $this->get_mappingid('group', $data->groupid, 0);
         $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->timemodified = $this->apply_date_offset($data->timemodified);

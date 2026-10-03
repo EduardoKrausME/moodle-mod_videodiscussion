@@ -1,0 +1,76 @@
+name: Build AMD artifacts
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'amd/src/**'
+      - '.github/workflows/build-amd.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-amd:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+        with:
+          path: plugin
+          fetch-depth: 0
+
+      - name: Checkout Moodle build tooling
+        uses: actions/checkout@v4
+        with:
+          repository: moodle/moodle
+          ref: MOODLE_405_STABLE
+          path: moodle
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: moodle/.nvmrc
+          cache: npm
+          cache-dependency-path: moodle/package-lock.json
+
+      - name: Install Moodle JavaScript dependencies
+        working-directory: moodle
+        run: npm ci
+
+      - name: Build plugin AMD modules with Moodle Grunt
+        shell: bash
+        run: |
+          rm -rf moodle/mod/videodiscussion
+          mkdir -p moodle/mod/videodiscussion
+          cp -a plugin/. moodle/mod/videodiscussion/
+          cd moodle/mod/videodiscussion/amd
+          npx grunt amd
+          cp -f build/*.min.js build/*.min.js.map "${GITHUB_WORKSPACE}/plugin/amd/build/"
+
+      - name: Verify generated artifacts
+        shell: bash
+        run: |
+          test -s plugin/amd/build/main.min.js
+          test -s plugin/amd/build/main.min.js.map
+          if cmp -s plugin/amd/src/main.js plugin/amd/build/main.min.js; then
+            echo "AMD build artifact is identical to source; Grunt output was not generated."
+            exit 1
+          fi
+
+      - name: Commit generated AMD artifacts
+        working-directory: plugin
+        shell: bash
+        run: |
+          if git diff --quiet -- amd/build; then
+            echo "AMD artifacts are already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add amd/build
+          git commit -m "Build AMD artifacts"
+          git push origin HEAD:master
