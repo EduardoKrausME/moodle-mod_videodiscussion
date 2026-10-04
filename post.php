@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Handles student-created discussions and responses.
@@ -23,6 +23,8 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\discussion_posted;
+use mod_videodiscussion\event\thread_created;
 
 require('../../config.php');
 
@@ -77,7 +79,7 @@ if ($threadid) {
         throw new moodle_exception('errorposting', 'videodiscussion');
     }
     $postid = $DB->insert_record('videodiscussion_posts', $post);
-    $event = \mod_videodiscussion\event\discussion_posted::create([
+    $event = discussion_posted::create([
         'objectid' => $postid,
         'context' => $context,
         'other' => ['threadid' => $threadid],
@@ -118,7 +120,7 @@ $thread = (object)[
     'timemodified' => $now,
 ];
 $threadid = $DB->insert_record('videodiscussion_threads', $thread);
-$event = \mod_videodiscussion\event\thread_created::create([
+$event = thread_created::create([
     'objectid' => $threadid,
     'context' => $context,
 ]);

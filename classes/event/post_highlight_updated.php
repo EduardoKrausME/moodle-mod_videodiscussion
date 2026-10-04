@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Video discussion post event.
@@ -24,10 +24,13 @@
 
 namespace mod_videodiscussion\event;
 
+use core\event\base;
+use moodle_url;
+
 /**
  * post highlight updated event.
  */
-class post_highlight_updated extends \core\event\base {
+class post_highlight_updated extends base {
     /**
      * Initialise the event data.
      */
@@ -58,10 +61,10 @@ class post_highlight_updated extends \core\event\base {
     /**
      * Return the event URL.
      *
-     * @return \moodle_url
+     * @return moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/videodiscussion/view.php', ['id' => $this->contextinstanceid]);
+        return new moodle_url('/mod/videodiscussion/view.php', ['id' => $this->contextinstanceid]);
     }
 
     /**

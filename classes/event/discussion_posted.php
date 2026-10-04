@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Discussion post event.
@@ -24,10 +24,13 @@
 
 namespace mod_videodiscussion\event;
 
+use core\event\base;
+use moodle_url;
+
 /**
  * Class discussion_posted.
  */
-class discussion_posted extends \core\event\base {
+class discussion_posted extends base {
 
     /**
      * Method init.
@@ -64,7 +67,7 @@ class discussion_posted extends \core\event\base {
      * @return mixed Return value.
      */
     public function get_url() {
-        return new \moodle_url('/mod/videodiscussion/view.php', ['id' => $this->contextinstanceid]);
+        return new moodle_url('/mod/videodiscussion/view.php', ['id' => $this->contextinstanceid]);
     }
 
     /**

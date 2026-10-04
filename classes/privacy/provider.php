@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Privacy provider.
@@ -24,10 +24,13 @@
 
 namespace mod_videodiscussion\privacy;
 
+use context;
+use context_module;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\contextlist;
+use core_privacy\local\request\core_userlist_provider;
 use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
@@ -39,7 +42,7 @@ use core_privacy\local\request\writer;
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\plugin\provider,
-    \core_privacy\local\request\core_userlist_provider {
+    core_userlist_provider {
 
     /**
      * Returns privacy metadata.
@@ -139,7 +142,7 @@ class provider implements
      */
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
-        if (!$context instanceof \context_module) {
+        if (!$context instanceof context_module) {
             return;
         }
 
@@ -190,7 +193,7 @@ class provider implements
 
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-            if (!$context instanceof \context_module) {
+            if (!$context instanceof context_module) {
                 continue;
             }
 
@@ -260,13 +263,13 @@ class provider implements
     /**
      * Deletes all user data while preserving teacher prompts as activity configuration.
      *
-     * @param \context $context
+     * @param context $context
      * @return void
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
+    public static function delete_data_for_all_users_in_context(context $context) {
         global $DB;
 
-        if (!$context instanceof \context_module) {
+        if (!$context instanceof context_module) {
             return;
         }
 
@@ -329,14 +332,14 @@ class provider implements
     /**
      * Deletes or anonymises one user's data without removing other users' contributions.
      *
-     * @param \context $context
+     * @param context $context
      * @param int $userid
      * @return void
      */
-    private static function delete_user_from_context(\context $context, int $userid): void {
+    private static function delete_user_from_context(context $context, int $userid): void {
         global $DB;
 
-        if (!$context instanceof \context_module) {
+        if (!$context instanceof context_module) {
             return;
         }
 

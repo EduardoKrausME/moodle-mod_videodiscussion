@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Activity overview integration.
@@ -28,13 +28,14 @@ use core\output\action_link;
 use core\output\local\properties\button;
 use core\output\local\properties\text_align;
 use core\url;
+use core_courseformat\activityoverviewbase;
 use core_courseformat\local\overview\overviewitem;
 use mod_videodiscussion\discussion_manager;
 
 /**
  * Moodle 5 activity overview integration.
  */
-class overview extends \core_courseformat\activityoverviewbase {
+class overview extends activityoverviewbase {
     /**
      * Returns activity-specific overview columns.
      *

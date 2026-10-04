@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * AJAX endpoint for watched progress.
@@ -24,11 +24,14 @@
 
 namespace mod_videodiscussion\external;
 
+use completion_info;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use context_module;
+use invalid_parameter_exception;
+use mod_videodiscussion\progress_manager;
 
 /**
  * Class save_progress.
@@ -73,13 +76,13 @@ class save_progress extends external_api {
         require_capability('mod/videodiscussion:view', $context);
         $activity = $DB->get_record('videodiscussion', ['id' => $cm->instance], '*', MUST_EXIST);
         if (strlen($params['segmentsjson']) > 100000) {
-            throw new \invalid_parameter_exception('Watched segments payload is too large.');
+            throw new invalid_parameter_exception('Watched segments payload is too large.');
         }
         $segments = json_decode($params['segmentsjson'], true);
         if (!is_array($segments)) {
             $segments = [];
         }
-        $record = (new \mod_videodiscussion\progress_manager())->save(
+        $record = (new progress_manager())->save(
             $activity->id,
             $USER->id,
             (float)$params['duration'],
@@ -87,7 +90,7 @@ class save_progress extends external_api {
             $segments
         );
         $course = get_course($cm->course);
-        $completion = new \completion_info($course);
+        $completion = new completion_info($course);
         if ($completion->is_enabled($cm)) {
             $completion->update_state($cm, COMPLETION_UNKNOWN, $USER->id);
         }

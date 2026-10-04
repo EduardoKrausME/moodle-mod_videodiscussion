@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Lists Video Discussion activities in a course.
@@ -22,12 +22,14 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_courseformat\activityoverviewbase;
+
 require('../../config.php');
 
 $id = required_param('id', PARAM_INT);
 
 if (class_exists('\\core_courseformat\\activityoverviewbase')) {
-    \core_courseformat\activityoverviewbase::redirect_to_overview_page($id, 'videodiscussion');
+    activityoverviewbase::redirect_to_overview_page($id, 'videodiscussion');
 }
 
 $course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);

@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Deletes or anonymises a discussion thread.
@@ -23,6 +23,8 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\thread_deleted;
+use mod_videodiscussion\event\thread_updated;
 
 require('../../../config.php');
 
@@ -61,7 +63,7 @@ $actualdelete = !empty($thread->teacherprompt) || ($ismanaging && !$isowner)
     || !$DB->record_exists('videodiscussion_posts', ['threadid' => $thread->id]);
 
 if ($actualdelete) {
-    $event = \mod_videodiscussion\event\thread_deleted::create([
+    $event = thread_deleted::create([
         'objectid' => $thread->id,
         'context' => $context,
     ]);
@@ -78,7 +80,7 @@ if ($actualdelete) {
     $thread->timemodified = time();
     $DB->update_record('videodiscussion_threads', $thread);
 
-    $event = \mod_videodiscussion\event\thread_updated::create([
+    $event = thread_updated::create([
         'objectid' => $thread->id,
         'context' => $context,
     ]);

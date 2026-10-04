@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Main activity view.
@@ -23,6 +23,7 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\course_module_viewed;
 use mod_videodiscussion\player;
 use mod_videodiscussion\timecode;
 
@@ -46,7 +47,7 @@ $completion = new completion_info($course);
 if ($completion->is_enabled($cm)) {
     $completion->set_module_viewed($cm);
 }
-$event = \mod_videodiscussion\event\course_module_viewed::create([
+$event = course_module_viewed::create([
     'objectid' => $activity->id,
     'context' => $context,
 ]);

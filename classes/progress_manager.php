@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Video progress storage.
@@ -23,6 +23,8 @@
  */
 
 namespace mod_videodiscussion;
+
+use stdClass;
 
 /**
  * Class progress_manager.
@@ -42,9 +44,9 @@ class progress_manager {
      * @param float $duration
      * @param float $lastposition
      * @param array $segments
-     * @return \stdClass
+     * @return stdClass
      */
-    public function save(int $activityid, int $userid, float $duration, float $lastposition, array $segments): \stdClass {
+    public function save(int $activityid, int $userid, float $duration, float $lastposition, array $segments): stdClass {
         global $DB;
 
         $now = time();

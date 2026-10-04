@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Participation report data loader.
@@ -25,6 +25,8 @@
 namespace mod_videodiscussion;
 
 use context_module;
+use moodle_url;
+use stdClass;
 
 /**
  * Loads report data in batches to avoid per-participant queries.
@@ -34,11 +36,11 @@ class report_manager {
      * Returns participants visible in the selected group.
      *
      * @param context_module $context
-     * @param \stdClass $cm
+     * @param stdClass $cm
      * @param int $currentgroup
      * @return array
      */
-    public function get_participants(context_module $context, \stdClass $cm, int $currentgroup): array {
+    public function get_participants(context_module $context, stdClass $cm, int $currentgroup): array {
         $groupmode = groups_get_activity_groupmode($cm);
         $canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
 
@@ -57,17 +59,17 @@ class report_manager {
     /**
      * Builds report rows using batched database queries.
      *
-     * @param \stdClass $course
-     * @param \stdClass $cm
-     * @param \stdClass $activity
+     * @param stdClass $course
+     * @param stdClass $cm
+     * @param stdClass $activity
      * @param array $users
      * @param int $currentgroup
      * @return array
      */
     public function get_rows(
-        \stdClass $course,
-        \stdClass $cm,
-        \stdClass $activity,
+        stdClass $course,
+        stdClass $cm,
+        stdClass $activity,
         array $users,
         int $currentgroup
     ): array {
@@ -133,7 +135,7 @@ class report_manager {
             $rows[] = [
                 'userid' => $userid,
                 'name' => fullname($user),
-                'profileurl' => (new \moodle_url('/user/view.php', [
+                'profileurl' => (new moodle_url('/user/view.php', [
                     'id' => $userid,
                     'course' => $course->id,
                 ]))->out(false),
@@ -187,17 +189,17 @@ class report_manager {
     /**
      * Calculates mandatory-prompt stats for all report participants in batches.
      *
-     * @param \stdClass $course
-     * @param \stdClass $cm
-     * @param \stdClass $activity
+     * @param stdClass $course
+     * @param stdClass $cm
+     * @param stdClass $activity
      * @param array $userids
      * @param int $currentgroup
      * @return array
      */
     private function mandatory_stats_for_users(
-        \stdClass $course,
-        \stdClass $cm,
-        \stdClass $activity,
+        stdClass $course,
+        stdClass $cm,
+        stdClass $activity,
         array $userids,
         int $currentgroup
     ): array {
@@ -283,12 +285,12 @@ class report_manager {
     /**
      * Returns group memberships for report participants with a single query.
      *
-     * @param \stdClass $course
-     * @param \stdClass $cm
+     * @param stdClass $course
+     * @param stdClass $cm
      * @param array $userids
      * @return array
      */
-    private function get_group_memberships(\stdClass $course, \stdClass $cm, array $userids): array {
+    private function get_group_memberships(stdClass $course, stdClass $cm, array $userids): array {
         global $DB;
 
         $result = [];

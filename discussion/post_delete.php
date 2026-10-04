@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Deletes a response.
@@ -23,6 +23,7 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\post_deleted;
 
 require('../../../config.php');
 
@@ -60,7 +61,7 @@ if ((int)$post->userid === $USER->id) {
     throw new moodle_exception('errorgroupaccess', 'videodiscussion');
 }
 
-$event = \mod_videodiscussion\event\post_deleted::create([
+$event = post_deleted::create([
     'objectid' => $post->id,
     'context' => $context,
     'other' => ['threadid' => $thread->id],

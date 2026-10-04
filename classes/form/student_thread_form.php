@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Student discussion edit form.
@@ -24,6 +24,7 @@
 
 namespace mod_videodiscussion\form;
 
+use mod_videodiscussion\timecode;
 use moodleform;
 
 defined('MOODLE_INTERNAL') || die;
@@ -76,7 +77,7 @@ class student_thread_form extends moodleform {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        if (\mod_videodiscussion\timecode::parse((string)($data['timepointtext'] ?? '')) === null) {
+        if (timecode::parse((string)($data['timepointtext'] ?? '')) === null) {
             $errors['timepointtext'] = get_string('invalidtimepoint', 'videodiscussion');
         }
         if (trim((string)($data['subject'] ?? '')) === '' || trim((string)($data['message'] ?? '')) === '') {

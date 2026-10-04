@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Adds or edits teacher discussion prompts.
@@ -23,6 +23,10 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\thread_created;
+use mod_videodiscussion\event\thread_updated;
+use mod_videodiscussion\form\thread_form;
+use mod_videodiscussion\timecode;
 
 require('../../../config.php');
 
@@ -52,7 +56,7 @@ $groups = groups_get_all_groups(
 );
 $allowallgroups = $groupmode == NOGROUPS || $canaccessallgroups;
 
-$form = new \mod_videodiscussion\form\thread_form(null, [
+$form = new thread_form(null, [
     'cmid' => $cm->id,
     'threadid' => $threadid,
     'groups' => $groups ?: [],
@@ -75,7 +79,7 @@ if ($threadid) {
     $form->set_data((object)[
         'id' => $cm->id,
         'threadid' => $thread->id,
-        'timepointtext' => \mod_videodiscussion\timecode::format((float)$thread->timepoint),
+        'timepointtext' => timecode::format((float)$thread->timepoint),
         'subject' => $thread->subject,
         'message_editor' => ['text' => $thread->message, 'format' => $thread->messageformat],
         'mandatory' => $thread->mandatory,
@@ -93,7 +97,7 @@ if ($data = $form->get_data()) {
         throw new moodle_exception('errorgroupaccess', 'videodiscussion');
     }
 
-    $timepoint = \mod_videodiscussion\timecode::parse((string)$data->timepointtext);
+    $timepoint = timecode::parse((string)$data->timepointtext);
     $now = time();
     $record = (object)[
         'videodiscussionid' => $activity->id,
@@ -113,14 +117,14 @@ if ($data = $form->get_data()) {
         $record->id = $thread->id;
         $record->timecreated = $thread->timecreated;
         $DB->update_record('videodiscussion_threads', $record);
-        $event = \mod_videodiscussion\event\thread_updated::create([
+        $event = thread_updated::create([
             'objectid' => $thread->id,
             'context' => $context,
         ]);
     } else {
         $record->timecreated = $now;
         $record->id = $DB->insert_record('videodiscussion_threads', $record);
-        $event = \mod_videodiscussion\event\thread_created::create([
+        $event = thread_created::create([
             'objectid' => $record->id,
             'context' => $context,
         ]);

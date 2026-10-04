@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Edits a user's response.
@@ -23,6 +23,8 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\post_updated;
+use mod_videodiscussion\form\post_form;
 
 require('../../../config.php');
 
@@ -56,7 +58,7 @@ $PAGE->set_url('/mod/videodiscussion/discussion/post_edit.php', ['id' => $cm->id
 $PAGE->set_title(get_string('editresponse', 'videodiscussion'));
 $PAGE->set_heading(format_string($course->fullname));
 
-$form = new \mod_videodiscussion\form\post_form(null, [
+$form = new post_form(null, [
     'cmid' => $cm->id,
     'postid' => $post->id,
 ]);
@@ -76,7 +78,7 @@ if ($data = $form->get_data()) {
     $post->timemodified = time();
     $DB->update_record('videodiscussion_posts', $post);
 
-    $event = \mod_videodiscussion\event\post_updated::create([
+    $event = post_updated::create([
         'objectid' => $post->id,
         'context' => $context,
         'other' => ['threadid' => $thread->id],

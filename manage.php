@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Teacher discussion prompt management.
@@ -23,6 +23,7 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\timecode;
 
 require('../../config.php');
 
@@ -67,7 +68,7 @@ foreach ($records as $thread) {
     $manageable = $manager->can_manage_group($cm, $context, $USER->id, (int)$thread->groupid);
     $row = [
         'id' => $thread->id,
-        'timecode' => \mod_videodiscussion\timecode::format((float)$thread->timepoint),
+        'timecode' => timecode::format((float)$thread->timepoint),
         'subject' => format_string($thread->subject),
         'author' => (int)$thread->userid === 0 ? get_string('deleteduser', 'videodiscussion') : fullname($thread),
         'group' => (int)$thread->groupid > 0 ? format_string(groups_get_group_name($thread->groupid)) :

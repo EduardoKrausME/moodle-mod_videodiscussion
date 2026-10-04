@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Edits a student-created discussion.
@@ -23,6 +23,9 @@
  */
 
 use mod_videodiscussion\discussion_manager;
+use mod_videodiscussion\event\thread_updated;
+use mod_videodiscussion\form\student_thread_form;
+use mod_videodiscussion\timecode;
 
 require('../../../config.php');
 
@@ -53,14 +56,14 @@ $PAGE->set_url('/mod/videodiscussion/discussion/student_edit.php', [
 $PAGE->set_title(get_string('editstudentdiscussion', 'videodiscussion'));
 $PAGE->set_heading(format_string($course->fullname));
 
-$form = new \mod_videodiscussion\form\student_thread_form(null, [
+$form = new student_thread_form(null, [
     'cmid' => $cm->id,
     'threadid' => $thread->id,
 ]);
 $form->set_data((object)[
     'id' => $cm->id,
     'threadid' => $thread->id,
-    'timepointtext' => \mod_videodiscussion\timecode::format((float)$thread->timepoint),
+    'timepointtext' => timecode::format((float)$thread->timepoint),
     'subject' => $thread->subject,
     'message' => $thread->message,
 ]);
@@ -70,14 +73,14 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
-    $thread->timepoint = \mod_videodiscussion\timecode::parse((string)$data->timepointtext) ?? 0;
+    $thread->timepoint = timecode::parse((string)$data->timepointtext) ?? 0;
     $thread->subject = trim($data->subject);
     $thread->message = trim($data->message);
     $thread->messageformat = FORMAT_PLAIN;
     $thread->timemodified = time();
     $DB->update_record('videodiscussion_threads', $thread);
 
-    $event = \mod_videodiscussion\event\thread_updated::create([
+    $event = thread_updated::create([
         'objectid' => $thread->id,
         'context' => $context,
     ]);

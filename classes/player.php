@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Video player configuration helper.
@@ -26,6 +26,7 @@ namespace mod_videodiscussion;
 
 use context_module;
 use moodle_url;
+use stdClass;
 
 /**
  * Class player.
@@ -34,11 +35,11 @@ class player {
     /**
      * Builds the player configuration.
      *
-     * @param \stdClass $activity
+     * @param stdClass $activity
      * @param context_module $context
      * @return array
      */
-    public static function config(\stdClass $activity, context_module $context): array {
+    public static function config(stdClass $activity, context_module $context): array {
         $source = $activity->videosource;
         $config = [
             'type' => $source,

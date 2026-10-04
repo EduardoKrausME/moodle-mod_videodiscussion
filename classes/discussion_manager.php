@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Discussion query and access helper.
@@ -25,6 +25,8 @@
 namespace mod_videodiscussion;
 
 use context_module;
+use moodle_url;
+use stdClass;
 
 /**
  * Class discussion_manager.
@@ -33,10 +35,10 @@ class discussion_manager {
     /**
      * Returns the currently selected activity group.
      *
-     * @param \stdClass $cm
+     * @param stdClass $cm
      * @return int
      */
-    public function current_group(\stdClass $cm): int {
+    public function current_group(stdClass $cm): int {
         $groupmode = groups_get_activity_groupmode($cm);
         if ($groupmode == NOGROUPS) {
             return 0;
@@ -47,13 +49,13 @@ class discussion_manager {
     /**
      * Checks whether a user can view the selected group.
      *
-     * @param \stdClass $cm
+     * @param stdClass $cm
      * @param context_module $context
      * @param int $userid
      * @param int $groupid
      * @return bool
      */
-    public function can_view_group(\stdClass $cm, context_module $context, int $userid, int $groupid): bool {
+    public function can_view_group(stdClass $cm, context_module $context, int $userid, int $groupid): bool {
         $groupmode = groups_get_activity_groupmode($cm);
         if ($groupmode == NOGROUPS || $groupid === 0) {
             return true;
@@ -70,13 +72,13 @@ class discussion_manager {
     /**
      * Checks whether a user can post in a selected group.
      *
-     * @param \stdClass $cm
+     * @param stdClass $cm
      * @param context_module $context
      * @param int $userid
      * @param int $groupid
      * @return bool
      */
-    public function can_post_group(\stdClass $cm, context_module $context, int $userid, int $groupid): bool {
+    public function can_post_group(stdClass $cm, context_module $context, int $userid, int $groupid): bool {
         $groupmode = groups_get_activity_groupmode($cm);
         if ($groupmode == NOGROUPS) {
             return $groupid === 0;
@@ -90,13 +92,13 @@ class discussion_manager {
     /**
      * Checks whether a user can manage content in a group.
      *
-     * @param \stdClass $cm
+     * @param stdClass $cm
      * @param context_module $context
      * @param int $userid
      * @param int $groupid
      * @return bool
      */
-    public function can_manage_group(\stdClass $cm, context_module $context, int $userid, int $groupid): bool {
+    public function can_manage_group(stdClass $cm, context_module $context, int $userid, int $groupid): bool {
         $groupmode = groups_get_activity_groupmode($cm);
         if ($groupmode == NOGROUPS) {
             return $groupid === 0;
@@ -110,14 +112,14 @@ class discussion_manager {
     /**
      * Returns activity threads formatted for templates.
      *
-     * @param \stdClass $activity
-     * @param \stdClass $cm
+     * @param stdClass $activity
+     * @param stdClass $cm
      * @param context_module $context
      * @param int $userid
      * @param int $groupid
      * @return array
      */
-    public function get_threads(\stdClass $activity, \stdClass $cm, context_module $context, int $userid, int $groupid): array {
+    public function get_threads(stdClass $activity, stdClass $cm, context_module $context, int $userid, int $groupid): array {
         global $DB;
 
         $params = ['activityid' => $activity->id];
@@ -182,7 +184,7 @@ class discussion_manager {
                 $path = $teacherprompt
                     ? '/mod/videodiscussion/discussion/edit.php'
                     : '/mod/videodiscussion/discussion/student_edit.php';
-                $editurl = (new \moodle_url($path, [
+                $editurl = (new moodle_url($path, [
                     'id' => $cm->id,
                     'threadid' => $thread->id,
                 ]))->out(false);
@@ -190,7 +192,7 @@ class discussion_manager {
 
             $deleteurl = '';
             if ($candelete) {
-                $deleteurl = (new \moodle_url('/mod/videodiscussion/discussion/thread_delete.php', [
+                $deleteurl = (new moodle_url('/mod/videodiscussion/discussion/thread_delete.php', [
                     'id' => $cm->id,
                     'threadid' => $thread->id,
                     'sesskey' => sesskey(),
@@ -225,9 +227,9 @@ class discussion_manager {
     /**
      * Returns posts for one thread.
      *
-     * @param \stdClass $activity
-     * @param \stdClass $cm
-     * @param \stdClass $thread
+     * @param stdClass $activity
+     * @param stdClass $cm
+     * @param stdClass $thread
      * @param context_module $context
      * @param int $userid
      * @param int $groupid
@@ -237,9 +239,9 @@ class discussion_manager {
      * @return array
      */
     private function get_posts(
-        \stdClass $activity,
-        \stdClass $cm,
-        \stdClass $thread,
+        stdClass $activity,
+        stdClass $cm,
+        stdClass $thread,
         context_module $context,
         int $userid,
         int $groupid,
@@ -286,16 +288,16 @@ class discussion_manager {
                 'canreply' => $canreply,
                 'canedit' => $canedit,
                 'candelete' => $candelete,
-                'highlighturl' => $mayhighlight ? (new \moodle_url('/mod/videodiscussion/highlight.php', [
+                'highlighturl' => $mayhighlight ? (new moodle_url('/mod/videodiscussion/highlight.php', [
                     'id' => $cm->id,
                     'postid' => $post->id,
                     'sesskey' => sesskey(),
                 ]))->out(false) : '',
-                'editurl' => $canedit ? (new \moodle_url('/mod/videodiscussion/discussion/post_edit.php', [
+                'editurl' => $canedit ? (new moodle_url('/mod/videodiscussion/discussion/post_edit.php', [
                     'id' => $cm->id,
                     'postid' => $post->id,
                 ]))->out(false) : '',
-                'deleteurl' => $candelete ? (new \moodle_url('/mod/videodiscussion/discussion/post_delete.php', [
+                'deleteurl' => $candelete ? (new moodle_url('/mod/videodiscussion/discussion/post_delete.php', [
                     'id' => $cm->id,
                     'postid' => $post->id,
                     'sesskey' => sesskey(),
@@ -310,16 +312,16 @@ class discussion_manager {
     /**
      * Checks that the selected thread is visible to a user who wants to post.
      *
-     * @param \stdClass $thread
-     * @param \stdClass $cm
+     * @param stdClass $thread
+     * @param stdClass $cm
      * @param context_module $context
      * @param int $userid
      * @param int $groupid
      * @return bool
      */
     public function can_access_thread(
-        \stdClass $thread,
-        \stdClass $cm,
+        stdClass $thread,
+        stdClass $cm,
         context_module $context,
         int $userid,
         int $groupid
@@ -333,15 +335,15 @@ class discussion_manager {
     /**
      * Checks whether the user may edit their own post.
      *
-     * @param \stdClass $post
-     * @param \stdClass $activity
+     * @param stdClass $post
+     * @param stdClass $activity
      * @param context_module $context
      * @param int $userid
      * @return bool
      */
     public function can_edit_post(
-        \stdClass $post,
-        \stdClass $activity,
+        stdClass $post,
+        stdClass $activity,
         context_module $context,
         int $userid
     ): bool {
@@ -353,15 +355,15 @@ class discussion_manager {
     /**
      * Checks whether the user may delete a post.
      *
-     * @param \stdClass $post
-     * @param \stdClass $activity
+     * @param stdClass $post
+     * @param stdClass $activity
      * @param context_module $context
      * @param int $userid
      * @return bool
      */
     public function can_delete_post(
-        \stdClass $post,
-        \stdClass $activity,
+        stdClass $post,
+        stdClass $activity,
         context_module $context,
         int $userid
     ): bool {
@@ -377,15 +379,15 @@ class discussion_manager {
     /**
      * Checks whether the user may edit their own student-created discussion.
      *
-     * @param \stdClass $thread
-     * @param \stdClass $activity
+     * @param stdClass $thread
+     * @param stdClass $activity
      * @param context_module $context
      * @param int $userid
      * @return bool
      */
     public function can_edit_thread(
-        \stdClass $thread,
-        \stdClass $activity,
+        stdClass $thread,
+        stdClass $activity,
         context_module $context,
         int $userid
     ): bool {
@@ -401,15 +403,15 @@ class discussion_manager {
     /**
      * Checks whether the user may delete a discussion.
      *
-     * @param \stdClass $thread
-     * @param \stdClass $activity
+     * @param stdClass $thread
+     * @param stdClass $activity
      * @param context_module $context
      * @param int $userid
      * @return bool
      */
     public function can_delete_thread(
-        \stdClass $thread,
-        \stdClass $activity,
+        stdClass $thread,
+        stdClass $activity,
         context_module $context,
         int $userid
     ): bool {
