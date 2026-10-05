@@ -32,88 +32,85 @@ use core_courseformat\activityoverviewbase;
 use core_courseformat\local\overview\overviewitem;
 use mod_videodiscussion\discussion_manager;
 
+defined('MOODLE_INTERNAL') || die();
+
 if (!class_exists(activityoverviewbase::class)) {
+    return;
+}
+
+/**
+ * Moodle 5 activity overview integration.
+ */
+class overview extends activityoverviewbase {
     /**
-     * Compatibility placeholder for Moodle versions before the activity overview API.
+     * Returns activity-specific overview columns.
+     *
+     * @return array
      */
-    class overview {
-    }
-} else {
-    /**
-     * Moodle 5 activity overview integration.
-     */
-    class overview extends activityoverviewbase {
-        /**
-         * Returns activity-specific overview columns.
-         *
-         * @return array
-         */
-        public function get_extra_overview_items(): array {
-            global $DB, $USER;
+    public function get_extra_overview_items(): array {
+        global $DB, $USER;
 
-            if (!has_capability('mod/videodiscussion:participate', $this->context, $USER, false)) {
-                return [];
-            }
-
-            $activity = $this->cm->get_instance_record();
-            $progress = $DB->get_record('videodiscussion_progress', [
-                'videodiscussionid' => $this->cm->instance,
-                'userid' => $USER->id,
-            ], 'percent');
-
-            $groupmode = groups_get_activity_groupmode($this->cm);
-            if ($groupmode == NOGROUPS) {
-                $groupids = [0];
-            } else {
-                $groups = groups_get_all_groups($this->course->id, $USER->id, $this->cm->groupingid, 'g.id') ?: [];
-                $groupids = array_map('intval', array_keys($groups));
-            }
-
-            $mandatory = (new discussion_manager())->mandatory_stats(
-                $this->cm->instance,
-                $USER->id,
-                $groupids
-            );
-
-            return [
-                'watched' => new overviewitem(
-                    name: get_string('watchedpercent', 'videodiscussion'),
-                    value: $progress ? (float)$progress->percent : 0,
-                    content: format_float($progress ? (float)$progress->percent : 0, 2) . '%',
-                    textalign: text_align::END,
-                ),
-                'mandatory' => new overviewitem(
-                    name: get_string('mandatoryanswered', 'videodiscussion'),
-                    value: $mandatory['answered'],
-                    content: $mandatory['answered'] . '/' . $mandatory['total'],
-                    textalign: text_align::END,
-                ),
-            ];
+        if (!has_capability('mod/videodiscussion:participate', $this->context, $USER, false)) {
+            return [];
         }
 
-        /**
-         * Returns teacher actions.
-         *
-         * @return overviewitem|null
-         */
-        public function get_actions_overview(): ?overviewitem {
-            if (!has_capability('mod/videodiscussion:viewreport', $this->context)) {
-                return null;
-            }
+        $activity = $this->cm->get_instance_record();
+        $progress = $DB->get_record('videodiscussion_progress', [
+            'videodiscussionid' => $this->cm->instance,
+            'userid' => $USER->id,
+        ], 'percent');
 
-            $link = new action_link(
-                url: new url('/mod/videodiscussion/report/report.php', ['id' => $this->cm->id]),
-                text: get_string('report', 'videodiscussion'),
-                attributes: ['class' => button::BODY_OUTLINE->classes()],
-            );
-
-            return new overviewitem(
-                name: get_string('actions'),
-                value: get_string('report', 'videodiscussion'),
-                content: $link,
-                textalign: text_align::CENTER,
-            );
+        $groupmode = groups_get_activity_groupmode($this->cm);
+        if ($groupmode == NOGROUPS) {
+            $groupids = [0];
+        } else {
+            $groups = groups_get_all_groups($this->course->id, $USER->id, $this->cm->groupingid, 'g.id') ?: [];
+            $groupids = array_map('intval', array_keys($groups));
         }
+
+        $mandatory = (new discussion_manager())->mandatory_stats(
+            $this->cm->instance,
+            $USER->id,
+            $groupids
+        );
+
+        return [
+            'watched' => new overviewitem(
+                name: get_string('watchedpercent', 'videodiscussion'),
+                value: $progress ? (float)$progress->percent : 0,
+                content: format_float($progress ? (float)$progress->percent : 0, 2) . '%',
+                textalign: text_align::END,
+            ),
+            'mandatory' => new overviewitem(
+                name: get_string('mandatoryanswered', 'videodiscussion'),
+                value: $mandatory['answered'],
+                content: $mandatory['answered'] . '/' . $mandatory['total'],
+                textalign: text_align::END,
+            ),
+        ];
     }
 
+    /**
+     * Returns teacher actions.
+     *
+     * @return overviewitem|null
+     */
+    public function get_actions_overview(): ?overviewitem {
+        if (!has_capability('mod/videodiscussion:viewreport', $this->context)) {
+            return null;
+        }
+
+        $link = new action_link(
+            url: new url('/mod/videodiscussion/report/report.php', ['id' => $this->cm->id]),
+            text: get_string('report', 'videodiscussion'),
+            attributes: ['class' => button::BODY_OUTLINE->classes()],
+        );
+
+        return new overviewitem(
+            name: get_string('actions'),
+            value: get_string('report', 'videodiscussion'),
+            content: $link,
+            textalign: text_align::CENTER,
+        );
+    }
 }
