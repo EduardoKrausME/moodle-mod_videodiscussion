@@ -36,7 +36,7 @@ class restore_videodiscussion_activity_task extends restore_activity_task {
      *
      * @return mixed Return value.
      */
-    protected function define_my_settings() {
+    protected function define_my_settings(): void {
     }
 
     /**
@@ -44,7 +44,7 @@ class restore_videodiscussion_activity_task extends restore_activity_task {
      *
      * @return mixed Return value.
      */
-    protected function define_my_steps() {
+    protected function define_my_steps(): void {
         $this->add_step(new restore_videodiscussion_activity_structure_step('videodiscussion_structure', 'videodiscussion.xml'));
     }
 
@@ -53,7 +53,7 @@ class restore_videodiscussion_activity_task extends restore_activity_task {
      *
      * @return mixed Return value.
      */
-    public static function define_decode_contents() {
+    public static function define_decode_contents(): array {
         return [new restore_decode_content('videodiscussion', ['intro'], 'videodiscussion')];
     }
 
@@ -62,7 +62,27 @@ class restore_videodiscussion_activity_task extends restore_activity_task {
      *
      * @return mixed Return value.
      */
-    public static function define_decode_rules() {
-        return [new restore_decode_rule('VIDEODISCUSSIONVIEWBYID', '/mod/videodiscussion/view.php?id=$1', 'course_module')];
+    public static function define_decode_rules(): array {
+        return [
+            new restore_decode_rule(
+                'VIDEODISCUSSIONVIEWBYID',
+                '/mod/videodiscussion/view.php?id=$1',
+                'course_module'
+            ),
+            new restore_decode_rule(
+                'VIDEODISCUSSIONINDEX',
+                '/mod/videodiscussion/index.php?id=$1',
+                'course'
+            ),
+        ];
+    }
+
+    /**
+     * Defines restore log mappings.
+     *
+     * @return restore_log_rule[]
+     */
+    public static function define_restore_log_rules(): array {
+        return [];
     }
 }

@@ -45,7 +45,7 @@ class mod_videodiscussion_generator extends testing_module_generator {
             'defaultrevealafterpost' => 0,
             'posteditwindow' => 1800,
             'completionpercent' => 90,
-            'completionwatch' => 0,
+            'completionwatch' => 1,
             'completionmandatory' => 0,
             'grade' => 100,
         ];
