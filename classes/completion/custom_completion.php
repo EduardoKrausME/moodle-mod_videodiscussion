@@ -42,9 +42,15 @@ class custom_completion extends activity_custom_completion {
 
         $this->validate_rule($rule);
         $activityid = $this->cm->instance;
+        $activity = $DB->get_record(
+            'videodiscussion',
+            ['id' => $activityid],
+            'id,completionpercent,completionwatch,completionmandatory',
+            MUST_EXIST
+        );
 
         if ($rule === 'completionwatch') {
-            $required = (int)($this->cm->customdata['customcompletionrules']['completionwatch'] ?? 0);
+            $required = !empty($activity->completionwatch) ? (int)$activity->completionpercent : 0;
             $percent = (float)$DB->get_field('videodiscussion_progress', 'percent', [
                 'videodiscussionid' => $activityid,
                 'userid' => $this->userid,
@@ -77,12 +83,59 @@ class custom_completion extends activity_custom_completion {
     }
 
     /**
+     * Returns the custom completion rules enabled for this activity instance.
+     *
+     * Normally Moodle obtains this from cm_info custom data. During a cache rebuild,
+     * or immediately after completion settings change, that custom data may be absent.
+     * In that case, fall back to the persisted activity settings.
+     *
+     * @return string[]
+     */
+    public function get_available_custom_rules(): array {
+        $customdata = (array)$this->cm->get_custom_data();
+        if (array_key_exists('customcompletionrules', $customdata)) {
+            return parent::get_available_custom_rules();
+        }
+
+        if ((int)$this->cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
+            return [];
+        }
+
+        global $DB;
+
+        $activity = $DB->get_record(
+            'videodiscussion',
+            ['id' => $this->cm->instance],
+            'id,completionpercent,completionwatch,completionmandatory',
+            MUST_EXIST
+        );
+
+        $rules = [];
+        if (!empty($activity->completionwatch) && (int)$activity->completionpercent > 0) {
+            $rules[] = 'completionwatch';
+        }
+        if (!empty($activity->completionmandatory)) {
+            $rules[] = 'completionmandatory';
+        }
+
+        return $rules;
+    }
+
+    /**
      * Returns rule descriptions.
      *
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-        $percent = (int)($this->cm->customdata['customcompletionrules']['completionwatch'] ?? 0);
+        global $DB;
+
+        $activity = $DB->get_record(
+            'videodiscussion',
+            ['id' => $this->cm->instance],
+            'id,completionpercent,completionwatch',
+            MUST_EXIST
+        );
+        $percent = !empty($activity->completionwatch) ? (int)$activity->completionpercent : 0;
 
         return [
             'completionwatch' => get_string('completiondetail:percent', 'videodiscussion', $percent),
