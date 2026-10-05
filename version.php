@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->release = '1.1.4';
-$plugin->version = 2026100501;
+$plugin->release = '1.1.5';
+$plugin->version = 2026100502;
 $plugin->component = 'mod_videodiscussion';
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
