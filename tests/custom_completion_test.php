@@ -109,6 +109,30 @@ final class custom_completion_test extends advanced_testcase {
     }
 
     /**
+     * Persisted custom rules remain available before cm_info completion data is rebuilt.
+     *
+     * @return void
+     */
+    public function test_persisted_rule_is_available_without_cm_completion_flag(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+        $activity = $this->getDataGenerator()->create_module('videodiscussion', [
+            'course' => $course->id,
+            'completionwatch' => 1,
+            'completionpercent' => 90,
+        ]);
+
+        rebuild_course_cache($course->id, true);
+        $cm = get_fast_modinfo($course)->get_cm($activity->cmid);
+        $completion = new custom_completion($cm, $user->id);
+
+        $this->assertContains('completionwatch', $completion->get_available_custom_rules());
+        $this->assertSame(COMPLETION_INCOMPLETE, $completion->get_state('completionwatch'));
+    }
+
+    /**
      * Rule list remains in sync with the completion class.
      *
      * @return void
