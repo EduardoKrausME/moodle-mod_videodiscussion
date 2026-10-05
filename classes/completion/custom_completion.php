@@ -92,12 +92,14 @@ class custom_completion extends activity_custom_completion {
      * @return string[]
      */
     public function get_available_custom_rules(): array {
-        if ((int)$this->cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
-            return [];
-        }
-
         global $DB;
 
+        // Keep rules exposed by cm_info, which is Moodle's normal source of truth.
+        $rules = parent::get_available_custom_rules();
+
+        // Also use the persisted settings as a fallback. Runtime validators and
+        // freshly-created test instances can have valid activity settings before
+        // cm_info custom data has been rebuilt.
         $activity = $DB->get_record(
             'videodiscussion',
             ['id' => $this->cm->instance],
@@ -105,7 +107,6 @@ class custom_completion extends activity_custom_completion {
             MUST_EXIST
         );
 
-        $rules = [];
         if (!empty($activity->completionwatch) && (int)$activity->completionpercent > 0) {
             $rules[] = 'completionwatch';
         }
@@ -113,7 +114,7 @@ class custom_completion extends activity_custom_completion {
             $rules[] = 'completionmandatory';
         }
 
-        return $rules;
+        return array_values(array_unique($rules));
     }
 
     /**
