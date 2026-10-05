@@ -272,7 +272,6 @@ function videodiscussion_update_grades($activity, $userid = 0, $nullifnone = tru
     videodiscussion_grade_item_update($activity, $grades ?: null);
 }
 
-
 /**
  * Returns cached course-module data including custom completion settings.
  *
