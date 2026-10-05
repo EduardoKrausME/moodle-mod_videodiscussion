@@ -75,7 +75,7 @@ class discussion_posted extends base {
      *
      * @return mixed Return value.
      */
-    protected function get_other_mapping() {
+    public static function get_other_mapping() {
         return ['threadid' => ['db' => 'videodiscussion_threads', 'restore' => 'videodiscussion_thread']];
     }
 }
