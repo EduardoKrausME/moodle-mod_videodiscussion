@@ -85,18 +85,13 @@ class custom_completion extends activity_custom_completion {
     /**
      * Returns the custom completion rules enabled for this activity instance.
      *
-     * Normally Moodle obtains this from cm_info custom data. During a cache rebuild,
-     * or immediately after completion settings change, that custom data may be absent.
-     * In that case, fall back to the persisted activity settings.
+     * The persisted activity settings are the source of truth here. cm_info custom data
+     * can still contain stale completion values immediately after settings are changed,
+     * which would make validate_rule() reject a rule that is already enabled in the activity.
      *
      * @return string[]
      */
     public function get_available_custom_rules(): array {
-        $customdata = (array)$this->cm->get_custom_data();
-        if (array_key_exists('customcompletionrules', $customdata)) {
-            return parent::get_available_custom_rules();
-        }
-
         if ((int)$this->cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
             return [];
         }
