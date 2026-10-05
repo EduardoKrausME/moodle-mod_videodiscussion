@@ -81,7 +81,7 @@ class post_highlight_updated extends base {
      *
      * @return array
      */
-    protected function get_other_mapping() {
+    public static function get_other_mapping() {
         return ['threadid' => ['db' => 'videodiscussion_threads', 'restore' => 'videodiscussion_thread']];
     }
 }
