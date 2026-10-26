@@ -28,10 +28,6 @@ later.
 - Backup and restore support.
 - Privacy API support.
 
-## Installation
-
-Copy the plugin directory to `mod/videodiscussion` and visit Site administration > Notifications.
-
 ## License
 
 GNU GPL v3 or later.
